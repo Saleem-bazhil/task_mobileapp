@@ -4,7 +4,7 @@ import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context"
 // 1. Updated import for React Native CLI
 import Feather from "react-native-vector-icons/Feather";
 
-import Chat from "../screens/Chat";
+import ChatStack from "../navigation/ChatStack";
 import Home from "../screens/Home";
 import Profile from "../screens/Profile";
 import TaskStack from "./TaskStack";
@@ -40,7 +40,7 @@ const TABS: TabConfig[] = [
     key: "Chat",
     label: "Chat",
     iconName: "message-circle",
-    component: Chat,
+    component: ChatStack,
   },
   {
     key: "Tasks",

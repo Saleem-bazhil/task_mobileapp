@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useNavigation } from "@react-navigation/native";
 import {
   View,
   Text,
@@ -10,7 +11,7 @@ import {
   Image,
   StyleSheet
 } from "react-native";
-import { Send, Phone, Video, MoreVertical } from "lucide-react-native";
+import { Send, Phone, Video, MoreVertical, ArrowLeft } from "lucide-react-native";
 import api from "../../api/Api"; 
 import { getAccessToken } from "../../services/storage";
 
@@ -48,6 +49,7 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
   const [messageText, setMessageText] = useState<string>("");
   const ws = useRef<WebSocket | null>(null);
   const scrollRef = useRef<ScrollView>(null);
+  const navigation = useNavigation();
 
   const room = conversation?.room_id;
   const otherUser = conversation?.other_user;
@@ -198,6 +200,9 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
     >
       {/* HEADER (WhatsApp Green / Teal) */}
       <View className="flex-row items-center px-4 py-3 bg-[#f0f2f5] border-b border-slate-200 shadow-sm z-10" style={styles.headerShadow}>
+        <Pressable onPress={() => navigation.goBack()} className="mr-3 p-1 active:opacity-50">
+          <ArrowLeft size={24} color="#54656f" />
+        </Pressable>
         <View className="w-10 h-10 rounded-full bg-slate-300 mr-3 overflow-hidden items-center justify-center">
           <Text className="text-white font-bold text-lg">
             {displayName.charAt(0).toUpperCase()}
