@@ -7,7 +7,7 @@ import Feather from "react-native-vector-icons/Feather";
 import Chat from "../screens/Chat";
 import Home from "../screens/Home";
 import Profile from "../screens/Profile";
-import Task from "../screens/Task";
+import TaskStack from "./TaskStack";
 
 type TabKey = "Home" | "Chat" | "Tasks" | "Profile";
 
@@ -46,7 +46,7 @@ const TABS: TabConfig[] = [
     key: "Tasks",
     label: "Tasks",
     iconName: "check-square",
-    component: Task,
+    component: TaskStack,
   },
   {
     key: "Profile",

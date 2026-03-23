@@ -8,6 +8,10 @@ import {
   View,
 } from 'react-native';
 import Feather from 'react-native-vector-icons/Feather';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+
+import { TaskStackParamList } from '../navigation/TaskStack';
 
 interface TaskCardProps {
   title: string;
@@ -56,7 +60,14 @@ const TaskCard: React.FC<TaskCardProps> = ({
   );
 };
 
-const TaskDashboard = () => {
+type TaskDashboardNavigationProp = NativeStackNavigationProp<
+  TaskStackParamList,
+  'TaskDashboard'
+>;
+
+const TaskDashboard: React.FC = () => {
+  const navigation = useNavigation<TaskDashboardNavigationProp>();
+
   return (
     <View className="flex-1 bg-[#F9FAFB]">
       <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
@@ -86,21 +97,21 @@ const TaskDashboard = () => {
           subtitle="Pending and active tasks"
           count="12"
           color="#3A72D8"
-          onPress={() => console.log('Navigating to My Tasks')}
+          onPress={() => navigation.navigate('MyTasks')}
         />
         <TaskCard
           title="ACCEPTED"
           subtitle="Tasks you have taken on"
           count="5"
           color="#10B981"
-          onPress={() => console.log('Navigating to Accepted Tasks')}
+          onPress={() => navigation.navigate('AcceptedTasks')}
         />
         <TaskCard
           title="COMPLETED"
           subtitle="Archived and finished work"
           count="48"
           color="#4B5563"
-          onPress={() => console.log('Navigating to Completed Tasks')}
+          onPress={() => navigation.navigate('CompletedTasks')}
         />
       </ScrollView>
     </View>
