@@ -1,6 +1,8 @@
 import React, { useMemo, useState } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+// 1. Updated import for React Native CLI
+import Feather from "react-native-vector-icons/Feather";
 
 import Chat from "../screens/Chat";
 import Home from "../screens/Home";
@@ -12,24 +14,13 @@ type TabKey = "Home" | "Chat" | "Tasks" | "Profile";
 type TabConfig = {
   key: TabKey;
   label: string;
-  activeIcon: string;
-  inactiveIcon: string;
+  // 2. Simplified type for RN CLI compatibility
+  iconName: string;
   component: React.ComponentType;
 };
 
 const PRIMARY_COLOR = "#0f766e";
 const INACTIVE_COLOR = "#94a3b8";
-const styles = StyleSheet.create({
-  activeIconBubble: {
-    backgroundColor: "rgba(15, 118, 110, 0.12)",
-  },
-  iconGlyph: {
-    fontSize: 20,
-  },
-  inactiveIconBubble: {
-    backgroundColor: "transparent",
-  },
-});
 
 const HEADER_TITLES: Record<TabKey, string> = {
   Home: "Dashboard",
@@ -42,29 +33,25 @@ const TABS: TabConfig[] = [
   {
     key: "Home",
     label: "Home",
-    activeIcon: "⌂",
-    inactiveIcon: "○",
+    iconName: "home",
     component: Home,
   },
   {
     key: "Chat",
     label: "Chat",
-    activeIcon: "◔",
-    inactiveIcon: "◌",
+    iconName: "message-circle",
     component: Chat,
   },
   {
     key: "Tasks",
     label: "Tasks",
-    activeIcon: "✓",
-    inactiveIcon: "◯",
+    iconName: "check-square",
     component: Task,
   },
   {
     key: "Profile",
     label: "Profile",
-    activeIcon: "●",
-    inactiveIcon: "○",
+    iconName: "user",
     component: Profile,
   },
 ];
@@ -103,28 +90,18 @@ export default function BottomTabs() {
                   key={tab.key}
                   accessibilityRole="button"
                   accessibilityState={{ selected: focused }}
-                  className="flex-1 items-center rounded-2xl py-2"
+                  className="flex-1 items-center py-2"
                   onPress={() => setActiveTab(tab.key)}
                 >
-                  <View
-                    className="mb-1 rounded-full px-4 py-2"
-                    style={
-                      focused
-                        ? styles.activeIconBubble
-                        : styles.inactiveIconBubble
-                    }
-                  >
-                    <Text
-                      style={[
-                        styles.iconGlyph,
-                        { color: focused ? PRIMARY_COLOR : INACTIVE_COLOR },
-                      ]}
-                    >
-                      {focused ? tab.activeIcon : tab.inactiveIcon}
-                    </Text>
+                  <View className="mb-1">
+                    <Feather
+                      name={tab.iconName}
+                      size={24}
+                      color={focused ? PRIMARY_COLOR : INACTIVE_COLOR}
+                    />
                   </View>
                   <Text
-                    className="text-xs font-semibold"
+                    className="text-xs font-semibold mt-1"
                     style={{ color: focused ? PRIMARY_COLOR : INACTIVE_COLOR }}
                   >
                     {tab.label}
