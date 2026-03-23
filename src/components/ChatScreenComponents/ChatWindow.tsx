@@ -179,7 +179,7 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
     return (
       <View className="flex-1 items-center justify-center bg-[#f0f2f5] border-l border-slate-300">
         <View className="items-center max-w-[80%]">
-          <Text className="text-2xl font-light text-slate-500 mb-4 whitespace-nowrap text-center">
+          <Text className="mb-4 text-center text-2xl font-light text-slate-500">
             WhatsApp Web UI
           </Text>
           <Text className="text-gray-400 text-center">

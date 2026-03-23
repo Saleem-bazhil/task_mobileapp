@@ -186,9 +186,9 @@ const ConversationSidebar: React.FC<Props> = ({
                       </View>
                       
                       <View className="flex-row items-center">
-                        {c.last_message && c.last_message.sender?.username === currentUser?.username && (
-                          <Text className="text-[12px] text-[#53bdeb] mr-1">✓✓</Text>
-                        )}
+                        {c.last_message && c.last_message.sender?.username === currentUser?.username ? (
+                          <Text className="mr-1 text-[12px] text-[#53bdeb]">Seen</Text>
+                        ) : null}
                         <Text className="text-[14px] text-[#54656f] flex-1" numberOfLines={1}>
                           {lastMsgText}
                         </Text>
