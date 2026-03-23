@@ -4,8 +4,13 @@ import {
   Text,
   TextInput,
   Pressable,
-  ScrollView
+  ScrollView,
+  KeyboardAvoidingView,
+  Platform
 } from "react-native";
+
+import api from "../../api/Api";
+import { getAccessToken } from "../../services/storage";
 
 interface Message {
   id: number;
@@ -14,83 +19,149 @@ interface Message {
   isMe: boolean;
 }
 
-interface Props {
-  room: string | null;
-  currentUser: string;
+interface User {
+  id: number;
+  username: string;
 }
 
-const ChatWindow: React.FC<Props> = ({ room, currentUser }) => {
+interface Conversation {
+  room_id: string;
+  id?: number;
+  other_user?: User;
+  last_message?: any;
+  updated_at: string | number | Date;
+}
+
+interface Props {
+  conversation: Conversation | null;
+  currentUser: any;
+  onMessagePersisted: (message: any) => void;
+}
+
+const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersisted }) => {
   const [messages, setMessages] = useState<Message[]>([]);
-  const [message, setMessage] = useState<string>("");
+  const [messageText, setMessageText] = useState<string>("");
   const ws = useRef<WebSocket | null>(null);
   const scrollRef = useRef<ScrollView>(null);
 
-  const BASE = "http://127.0.0.1:8000";
+  const room = conversation?.room_id;
 
   // 📥 Fetch history
   useEffect(() => {
-    if (!room) return;
+    if (!room) {
+      setMessages([]);
+      return;
+    }
 
-    fetch(`${BASE}/api/messages/${room}/`)
-      .then(res => res.json())
-      .then(data => {
+    // Using the REST API to get existing messages for the room
+    api.get(`/api/chat/rooms/${room}/messages/`)
+      .then(res => {
+        const data = res.data || [];
         const formatted: Message[] = data.map((m: any) => ({
-          id: m.id,
-          text: m.content,
-          sender: m.sender,
-          isMe: m.sender === currentUser
+          id: m.id || Math.random(),
+          text: m.content || m.text,
+          sender: m.sender?.username || m.sender,
+          isMe: (m.sender?.id === currentUser?.id) || (m.sender === currentUser?.username)
         }));
         setMessages(formatted);
-      });
+      })
+      .catch(console.error);
   }, [room, currentUser]);
 
-  // 🔌 WebSocket
+  // 🔌 WebSocket connecting directly to the Django Channels backend or equivalent
   useEffect(() => {
     if (!room) return;
 
-    const socket = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${room}/`);
-    ws.current = socket;
+    let active = true;
 
-    socket.onmessage = (e) => {
-      const data = JSON.parse(e.data);
+    const connectWebSocket = async () => {
+      try {
+        const token = await getAccessToken();
+        if (!active) return;
 
-      setMessages(prev => [
-        ...prev,
-        {
-          id: Date.now(),
-          text: data.message,
-          sender: data.sender,
-          isMe: data.sender === currentUser
-        }
-      ]);
+        // Pass token in URL query for Django Channels JwtAuthMiddleware
+        const wsUrl = `ws://127.0.0.1:8000/ws/chat/${room}/${token ? `?token=${token}` : ''}`;
+        const socket = new WebSocket(wsUrl);
+        ws.current = socket;
+
+        socket.onopen = () => {
+          console.log('Connected to chat room:', room);
+        };
+
+        socket.onmessage = (e) => {
+          try {
+            const data = JSON.parse(e.data);
+
+            setMessages(prev => [
+              ...prev,
+              {
+                id: data.id || Date.now(),
+                text: data.content || data.message,
+                sender: data.sender?.username || data.sender,
+                isMe: (data.sender?.id === currentUser?.id) || (data.sender?.username === currentUser?.username) || (data.sender === currentUser?.username)
+              }
+            ]);
+
+            // Notify parent to update the conversation list snippet
+            if (onMessagePersisted) {
+              onMessagePersisted({
+                room_id: room,
+                content: data.content || data.message,
+                timestamp: data.timestamp || new Date().toISOString()
+              });
+            }
+          } catch (err) {
+            console.error("Failed to parse websocket message", err);
+          }
+        };
+
+        socket.onclose = () => {
+          console.log('Chat socket closed');
+        };
+      } catch (err) {
+        console.error("Failed to get token for websocket", err);
+      }
     };
 
-    return () => socket.close();
-  }, [room, currentUser]);
+    connectWebSocket();
+
+    return () => {
+      active = false;
+      if (ws.current?.readyState === WebSocket.OPEN) {
+        ws.current.close();
+      }
+    };
+  }, [room, currentUser, onMessagePersisted]);
 
   // 🔽 scroll to bottom
   useEffect(() => {
-    scrollRef.current?.scrollToEnd({ animated: true });
+    setTimeout(() => {
+      scrollRef.current?.scrollToEnd({ animated: true });
+    }, 100);
   }, [messages]);
 
   // 📤 send message
   const sendMessage = () => {
-    if (!message.trim()) return;
+    if (!messageText.trim()) return;
 
-    if (ws.current?.readyState === WebSocket.OPEN) {
+    if (ws.current && ws.current.readyState === WebSocket.OPEN) {
       ws.current.send(JSON.stringify({
-        message,
-        sender: currentUser
+        message: messageText,
+        sender: currentUser?.username || "Me",
+        sender_id: currentUser?.id
       }));
+
+      // Some backends echo the message back to sender, some don't.
+      // If the backend doesn't echo, we'd need to add it optimistically here.
+      // Assuming it echoes for now (standard channels tutorial implementation).
     }
 
-    setMessage("");
+    setMessageText("");
   };
 
-  // ❌ No room selected
   if (!room) {
     return (
-      <View className="flex-1 items-center justify-center">
+      <View className="flex-1 items-center justify-center bg-white rounded-2xl border border-slate-200">
         <Text className="text-gray-400">
           Select a chat to start messaging
         </Text>
@@ -99,11 +170,15 @@ const ChatWindow: React.FC<Props> = ({ room, currentUser }) => {
   }
 
   return (
-    <View className="flex-1 bg-white rounded-2xl border border-slate-200">
-
+    <KeyboardAvoidingView
+      className="flex-1 bg-white rounded-2xl border border-slate-200"
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+    >
       {/* HEADER */}
       <View className="p-4 border-b border-slate-200">
-        <Text className="font-bold text-lg">{room}</Text>
+        <Text className="font-bold text-lg">
+          {conversation.other_user?.username || "Chat"}
+        </Text>
       </View>
 
       {/* MESSAGES */}
@@ -118,15 +193,16 @@ const ChatWindow: React.FC<Props> = ({ room, currentUser }) => {
             className={`mb-2 ${m.isMe ? "items-end" : "items-start"}`}
           >
             <View
-              className={`px-3 py-2 rounded-lg max-w-[80%] ${
-                m.isMe
-                  ? "bg-blue-500"
-                  : "bg-white border border-slate-200"
-              }`}
+              className={`px-3 py-2 rounded-lg max-w-[80%] ${m.isMe
+                ? "bg-blue-500"
+                : "bg-white border border-slate-200"
+                }`}
             >
-              <Text className="font-semibold text-xs text-gray-600">
-                {m.sender}
-              </Text>
+              {!m.isMe && (
+                <Text className="font-semibold text-xs text-gray-400 mb-1">
+                  {m.sender}
+                </Text>
+              )}
               <Text className={m.isMe ? "text-white" : "text-black"}>
                 {m.text}
               </Text>
@@ -138,22 +214,21 @@ const ChatWindow: React.FC<Props> = ({ room, currentUser }) => {
       {/* INPUT */}
       <View className="p-3 flex-row gap-2 border-t border-slate-200">
         <TextInput
-          value={message}
-          onChangeText={setMessage}
-          placeholder="Type message..."
-          className="flex-1 border border-slate-300 p-2 rounded-lg"
+          value={messageText}
+          onChangeText={setMessageText}
+          placeholder="Type a message..."
+          className="flex-1 border border-slate-300 px-4 py-2 rounded-full"
           onSubmitEditing={sendMessage}
         />
 
         <Pressable
           onPress={sendMessage}
-          className="bg-blue-500 px-4 rounded-lg items-center justify-center"
+          className="bg-blue-500 px-5 rounded-full items-center justify-center active:bg-blue-600"
         >
-          <Text className="text-white">Send</Text>
+          <Text className="text-white font-semibold">Send</Text>
         </Pressable>
       </View>
-
-    </View>
+    </KeyboardAvoidingView>
   );
 };
 
