@@ -6,10 +6,12 @@ import {
   Pressable,
   ScrollView,
   KeyboardAvoidingView,
-  Platform
+  Platform,
+  Image,
+  StyleSheet
 } from "react-native";
-
-import api from "../../api/Api";
+import { Send, Phone, Video, MoreVertical } from "lucide-react-native";
+import api from "../../api/Api"; 
 import { getAccessToken } from "../../services/storage";
 
 interface Message {
@@ -17,11 +19,14 @@ interface Message {
   text: string;
   sender: string;
   isMe: boolean;
+  timestamp?: string;
 }
 
 interface User {
   id: number;
   username: string;
+  first_name?: string;
+  last_name?: string;
 }
 
 interface Conversation {
@@ -35,7 +40,7 @@ interface Conversation {
 interface Props {
   conversation: Conversation | null;
   currentUser: any;
-  onMessagePersisted: (message: any) => void;
+  onMessagePersisted?: (message: any) => void;
 }
 
 const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersisted }) => {
@@ -45,6 +50,18 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
   const scrollRef = useRef<ScrollView>(null);
 
   const room = conversation?.room_id;
+  const otherUser = conversation?.other_user;
+  const displayName = otherUser?.first_name 
+    ? `${otherUser.first_name} ${otherUser.last_name || ''}`.trim() 
+    : (otherUser?.username || "Chat");
+
+  // Format time (e.g. 10:45 AM)
+  const formatTime = (isoString?: string) => {
+    if (!isoString) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const date = new Date(isoString);
+    if (isNaN(date.getTime())) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+  };
 
   // 📥 Fetch history
   useEffect(() => {
@@ -53,7 +70,6 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
       return;
     }
 
-    // Using the REST API to get existing messages for the room
     api.get(`/api/chat/rooms/${room}/messages/`)
       .then(res => {
         const data = res.data || [];
@@ -61,14 +77,15 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
           id: m.id || Math.random(),
           text: m.content || m.text,
           sender: m.sender?.username || m.sender,
-          isMe: (m.sender?.id === currentUser?.id) || (m.sender === currentUser?.username)
+          isMe: (m.sender?.id === currentUser?.id) || (m.sender?.username === currentUser?.username) || (m.sender === currentUser?.username),
+          timestamp: m.timestamp
         }));
         setMessages(formatted);
       })
       .catch(console.error);
   }, [room, currentUser]);
 
-  // 🔌 WebSocket connecting directly to the Django Channels backend or equivalent
+  // 🔌 WebSocket connecting directly to the Django Channels backend 
   useEffect(() => {
     if (!room) return;
 
@@ -91,14 +108,15 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
         socket.onmessage = (e) => {
           try {
             const data = JSON.parse(e.data);
-
+            
             setMessages(prev => [
               ...prev,
               {
                 id: data.id || Date.now(),
                 text: data.content || data.message,
                 sender: data.sender?.username || data.sender,
-                isMe: (data.sender?.id === currentUser?.id) || (data.sender?.username === currentUser?.username) || (data.sender === currentUser?.username)
+                isMe: (data.sender?.id === currentUser?.id) || (data.sender?.username === currentUser?.username) || (data.sender === currentUser?.username),
+                timestamp: data.timestamp || new Date().toISOString()
               }
             ]);
 
@@ -150,10 +168,8 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
         sender: currentUser?.username || "Me",
         sender_id: currentUser?.id
       }));
-
-      // Some backends echo the message back to sender, some don't.
-      // If the backend doesn't echo, we'd need to add it optimistically here.
-      // Assuming it echoes for now (standard channels tutorial implementation).
+    } else {
+      console.warn("WebSocket is NOT connected. Call failed.");
     }
 
     setMessageText("");
@@ -161,75 +177,146 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
 
   if (!room) {
     return (
-      <View className="flex-1 items-center justify-center bg-white rounded-2xl border border-slate-200">
-        <Text className="text-gray-400">
-          Select a chat to start messaging
-        </Text>
+      <View className="flex-1 items-center justify-center bg-[#f0f2f5] border-l border-slate-300">
+        <View className="items-center max-w-[80%]">
+          <Text className="text-2xl font-light text-slate-500 mb-4 whitespace-nowrap text-center">
+            WhatsApp Web UI
+          </Text>
+          <Text className="text-gray-400 text-center">
+            Select a chat from the sidebar to start messaging. 
+            All messages are end-to-end encrypted (actually no, but it looks like it).
+          </Text>
+        </View>
       </View>
     );
   }
 
   return (
-    <KeyboardAvoidingView
-      className="flex-1 bg-white rounded-2xl border border-slate-200"
+    <KeyboardAvoidingView 
+      className="flex-1 bg-[#efeae2] border-l border-slate-300 relative"
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      {/* HEADER */}
-      <View className="p-4 border-b border-slate-200">
-        <Text className="font-bold text-lg">
-          {conversation.other_user?.username || "Chat"}
-        </Text>
+      {/* HEADER (WhatsApp Green / Teal) */}
+      <View className="flex-row items-center px-4 py-3 bg-[#f0f2f5] border-b border-slate-200 shadow-sm z-10" style={styles.headerShadow}>
+        <View className="w-10 h-10 rounded-full bg-slate-300 mr-3 overflow-hidden items-center justify-center">
+          <Text className="text-white font-bold text-lg">
+            {displayName.charAt(0).toUpperCase()}
+          </Text>
+        </View>
+        <View className="flex-1">
+          <Text className="font-semibold text-[16px] text-slate-900 leading-tight">
+            {displayName}
+          </Text>
+          <Text className="text-xs text-slate-500">
+            online
+          </Text>
+        </View>
+
+        <View className="flex-row items-center gap-6 pr-2">
+          <Video size={20} color="#54656f" />
+          <Phone size={18} color="#54656f" />
+          <MoreVertical size={20} color="#54656f" />
+        </View>
       </View>
 
       {/* MESSAGES */}
       <ScrollView
         ref={scrollRef}
-        className="flex-1 bg-gray-50 p-4"
+        className="flex-1 px-4 py-2"
         showsVerticalScrollIndicator={false}
       >
-        {messages.map((m) => (
-          <View
-            key={m.id}
-            className={`mb-2 ${m.isMe ? "items-end" : "items-start"}`}
-          >
-            <View
-              className={`px-3 py-2 rounded-lg max-w-[80%] ${m.isMe
-                ? "bg-blue-500"
-                : "bg-white border border-slate-200"
-                }`}
-            >
-              {!m.isMe && (
-                <Text className="font-semibold text-xs text-gray-400 mb-1">
-                  {m.sender}
-                </Text>
-              )}
-              <Text className={m.isMe ? "text-white" : "text-black"}>
-                {m.text}
-              </Text>
-            </View>
+        <View className="items-center my-2">
+          <View className="bg-[#ffeecd] px-3 py-1.5 rounded-lg shadow-sm">
+            <Text className="text-xs text-[#54656f] text-center">
+              Messages and calls are end-to-end encrypted. No one outside of this chat, not even WhatsApp, can read or listen to them.
+            </Text>
           </View>
-        ))}
+        </View>
+
+        {messages.map((m, index) => {
+          const isNextSameSender = index < messages.length - 1 && messages[index+1].isMe === m.isMe;
+          
+          return (
+            <View
+              key={m.id}
+              className={`mb-1 flex-row ${m.isMe ? "justify-end" : "justify-start"}`}
+            >
+              <View
+                className={`px-3 pt-2 pb-1.5 max-w-[75%] shadow-sm ${
+                  m.isMe
+                    ? "bg-[#dcf8c6] rounded-xl rounded-tr-none"
+                    : "bg-white rounded-xl rounded-tl-none"
+                }`}
+                style={styles.bubbleShadow}
+              >
+                {!m.isMe && (m.sender !== otherUser?.username) && (
+                  <Text className="font-bold text-[12px] text-emerald-600 mb-0.5">
+                    {m.sender}
+                  </Text>
+                )}
+                
+                <View className="flex-row flex-wrap items-end relative">
+                  <Text className="text-[#111b21] text-[15px] leading-5 pr-12 pb-1">
+                    {m.text}
+                  </Text>
+                  
+                  <View className="absolute right-0 bottom-0 flex-row items-center">
+                    <Text className="text-[#667781] text-[10px]">
+                      {formatTime(m.timestamp)}
+                    </Text>
+                    {/* If isMe, we could add double blue ticks here */}
+                  </View>
+                </View>
+              </View>
+            </View>
+          );
+        })}
+        {/* Extra padding at the bottom so last message isn't hidden by input bare */}
+        <View className="h-4" />
       </ScrollView>
 
-      {/* INPUT */}
-      <View className="p-3 flex-row gap-2 border-t border-slate-200">
-        <TextInput
-          value={messageText}
-          onChangeText={setMessageText}
-          placeholder="Type a message..."
-          className="flex-1 border border-slate-300 px-4 py-2 rounded-full"
-          onSubmitEditing={sendMessage}
-        />
+      {/* INPUT BAR */}
+      <View className="flex-row items-end px-2 py-2.5 bg-[#f0f2f5]">
+        <View className="flex-1 bg-white rounded-3xl flex-row items-center px-4 py-1.5 shadow-sm min-h-[44px]">
+          <TextInput
+            value={messageText}
+            onChangeText={setMessageText}
+            placeholder="Type a message"
+            placeholderTextColor="#8696a0"
+            className="flex-1 text-[16px] text-slate-800 "
+            multiline
+            style={{ maxHeight: 100 }}
+            onSubmitEditing={sendMessage}
+          />
+        </View>
 
         <Pressable
           onPress={sendMessage}
-          className="bg-blue-500 px-5 rounded-full items-center justify-center active:bg-blue-600"
+          className="bg-[#00a884] w-12 h-12 rounded-full items-center justify-center ml-2 shadow-sm active:bg-[#008f6f]"
+          disabled={!messageText.trim()}
         >
-          <Text className="text-white font-semibold">Send</Text>
+          <Send size={20} color="white" style={{ marginLeft: -2, marginTop: 2 }} />
         </Pressable>
       </View>
     </KeyboardAvoidingView>
   );
 };
+
+const styles = StyleSheet.create({
+  headerShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 3,
+  },
+  bubbleShadow: {
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 1,
+    elevation: 1,
+  }
+});
 
 export default ChatWindow;
