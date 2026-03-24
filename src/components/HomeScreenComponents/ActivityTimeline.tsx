@@ -81,10 +81,10 @@ const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities = [] }) 
         </View>
       ) : (
         <View className="gap-4">
-          {activities.slice(0, 5).map((activity, index) => {
+          {activities.slice(0, 4).map((activity, index) => {
             const config = activityConfig(activity.action);
             const Icon = config.icon;
-            const isLast = index === Math.min(activities.length, 5) - 1;
+            const isLast = index === Math.min(activities.length, 4) - 1;
 
             return (
               <View key={`${activity.action}-${activity.id}`} className="flex-row">

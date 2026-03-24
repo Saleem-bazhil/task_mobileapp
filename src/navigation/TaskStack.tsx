@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import AcceptedTasks from '../screens/AcceptedTask';
 import CompletedTasks from '../screens/CompletedTask';
 import MyTasks from '../screens/MyTask';
+import { useBottomTabs } from '../navigation/BottomTabs';
 import TaskDashboard from '../screens/Task';
 
 export type TaskStackParamList = {
@@ -16,9 +17,12 @@ export type TaskStackParamList = {
 const Stack = createNativeStackNavigator<TaskStackParamList>();
 
 const TaskStack: React.FC = () => {
+  const { pendingTaskRoute } = useBottomTabs();
+
   return (
     <Stack.Navigator
-      initialRouteName="TaskDashboard"
+      key={pendingTaskRoute}
+      initialRouteName={pendingTaskRoute}
       screenOptions={{
         headerShown: false,
       }}

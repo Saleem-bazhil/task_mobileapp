@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
 import { Briefcase, CheckCircle, ChevronRight, ListTodo, Sparkles } from 'lucide-react-native';
-import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { useNavigation } from '@react-navigation/native';
+import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { TaskStackParamList } from '../navigation/TaskStack';
 import { fetchDashboard } from '../services/tasks';
 
-type TaskDashboardNavigationProp = NativeStackNavigationProp<TaskStackParamList, 'TaskDashboard'>;
+type TaskDashboardScreenProps = NativeStackScreenProps<TaskStackParamList, 'TaskDashboard'>;
 
 interface DashboardData {
   stats?: {
@@ -19,7 +18,7 @@ interface DashboardData {
 }
 
 interface TaskHubContentProps {
-  navigation: TaskDashboardNavigationProp;
+  navigation: TaskDashboardScreenProps['navigation'];
 }
 
 const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
@@ -186,9 +185,7 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
   );
 };
 
-const TaskDashboard: React.FC = () => {
-  const navigation = useNavigation<TaskDashboardNavigationProp>();
-
+const TaskDashboardContent: React.FC<TaskDashboardScreenProps> = ({ navigation }) => {
   return (
     <View className="flex-1 bg-[#FFF6FA]">
       <StatusBar barStyle="dark-content" backgroundColor="#FFF6FA" />
@@ -196,5 +193,9 @@ const TaskDashboard: React.FC = () => {
     </View>
   );
 };
+
+const TaskDashboard: React.FC<TaskDashboardScreenProps> = (props) => (
+  <TaskDashboardContent {...props} />
+);
 
 export default TaskDashboard;

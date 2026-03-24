@@ -10,6 +10,17 @@ import TaskStack from './TaskStack';
 
 export type TabKey = 'Home' | 'Chat' | 'Tasks' | 'Profile';
 
+export type PendingChatTarget = {
+  userId?: number | string;
+  username?: string;
+} | null;
+
+export type PendingTaskRoute =
+  | 'TaskDashboard'
+  | 'MyTasks'
+  | 'AcceptedTasks'
+  | 'CompletedTasks';
+
 type BottomTabContextValue = {
   activeTab: TabKey;
   setActiveTab: (tab: TabKey) => void;
@@ -17,6 +28,10 @@ type BottomTabContextValue = {
   setChatBadgeCount: (count: number) => void;
   isTabBarVisible: boolean;
   setIsTabBarVisible: (visible: boolean) => void;
+  pendingChatTarget: PendingChatTarget;
+  setPendingChatTarget: (target: PendingChatTarget) => void;
+  pendingTaskRoute: PendingTaskRoute;
+  setPendingTaskRoute: (route: PendingTaskRoute) => void;
 };
 
 type TabConfig = {
@@ -26,7 +41,20 @@ type TabConfig = {
   component: React.ComponentType;
 };
 
-const BottomTabContext = createContext<BottomTabContextValue | null>(null);
+const defaultBottomTabContext: BottomTabContextValue = {
+  activeTab: 'Home',
+  setActiveTab: () => {},
+  chatBadgeCount: 0,
+  setChatBadgeCount: () => {},
+  isTabBarVisible: true,
+  setIsTabBarVisible: () => {},
+  pendingChatTarget: null,
+  setPendingChatTarget: () => {},
+  pendingTaskRoute: 'TaskDashboard',
+  setPendingTaskRoute: () => {},
+};
+
+const BottomTabContext = createContext<BottomTabContextValue>(defaultBottomTabContext);
 const PRIMARY_COLOR = '#E41F6A';
 const INACTIVE_COLOR = '#94a3b8';
 
@@ -65,13 +93,7 @@ const TABS: TabConfig[] = [
 ];
 
 export function useBottomTabs() {
-  const context = useContext(BottomTabContext);
-
-  if (!context) {
-    throw new Error('useBottomTabs must be used within BottomTabs');
-  }
-
-  return context;
+  return useContext(BottomTabContext);
 }
 
 export default function BottomTabs() {
@@ -79,9 +101,11 @@ export default function BottomTabs() {
   const [tabUiState, setTabUiState] = useState({
     chatBadgeCount: 0,
     isTabBarVisible: true,
+    pendingChatTarget: null as PendingChatTarget,
+    pendingTaskRoute: 'TaskDashboard' as PendingTaskRoute,
   });
   const insets = useSafeAreaInsets();
-  const { chatBadgeCount, isTabBarVisible } = tabUiState;
+  const { chatBadgeCount, isTabBarVisible, pendingChatTarget, pendingTaskRoute } = tabUiState;
 
   const setChatBadgeCount = (count: number) => {
     setTabUiState((prev) => ({
@@ -94,6 +118,20 @@ export default function BottomTabs() {
     setTabUiState((prev) => ({
       ...prev,
       isTabBarVisible: visible,
+    }));
+  };
+
+  const setPendingChatTarget = (target: PendingChatTarget) => {
+    setTabUiState((prev) => ({
+      ...prev,
+      pendingChatTarget: target,
+    }));
+  };
+
+  const setPendingTaskRoute = (route: PendingTaskRoute) => {
+    setTabUiState((prev) => ({
+      ...prev,
+      pendingTaskRoute: route,
     }));
   };
 
@@ -110,6 +148,10 @@ export default function BottomTabs() {
         setChatBadgeCount,
         isTabBarVisible,
         setIsTabBarVisible,
+        pendingChatTarget,
+        setPendingChatTarget,
+        pendingTaskRoute,
+        setPendingTaskRoute,
       }}
     >
       <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>

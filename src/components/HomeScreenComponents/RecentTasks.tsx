@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { ArrowRight, CalendarDays, FolderKanban, MessageCircleMore } from 'lucide-react-native';
+import { ArrowRight, CalendarDays, FolderKanban } from 'lucide-react-native';
 
 export type Priority = 'high' | 'medium' | 'low' | string;
 export type Status = 'completed' | 'in_progress' | 'pending' | string;
@@ -13,6 +13,27 @@ export interface Task {
   status: Status;
   due_date?: string | Date;
   user?: {
+    id?: string | number;
+    username?: string;
+  };
+  assigned_to?: {
+    id?: string | number;
+    username?: string;
+  };
+  assigned_by?: {
+    id?: string | number;
+    username?: string;
+  };
+  owner?: {
+    id?: string | number;
+    username?: string;
+  };
+  created_by?: {
+    id?: string | number;
+    username?: string;
+  };
+  creator?: {
+    id?: string | number;
     username?: string;
   };
 }
@@ -120,17 +141,8 @@ const RecentTasks: React.FC<RecentTasksProps> = ({ tasks = [], isAdmin, onViewAl
                   </View>
                 </View>
 
-                <View className="mt-4 flex-row items-center justify-between border-t border-slate-200 pt-3">
-                  <View className="flex-1 pr-3">
-                    <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">
-                      {isAdmin ? 'Assigned To' : 'Owner'}
-                    </Text>
-                    <Text className="mt-1 text-sm font-medium text-slate-700">
-                      {task.user?.username || 'Unassigned'}
-                    </Text>
-                  </View>
-
-                  <View className="rounded-2xl bg-white px-3 py-2">
+                <View className="mt-4 border-t border-slate-200 pt-3">
+                  <View className="self-end rounded-2xl bg-white px-3 py-2">
                     <View className="flex-row items-center">
                       <CalendarDays size={14} color="#94A3B8" />
                       <Text className="ml-2 text-sm font-medium text-slate-600">
@@ -140,14 +152,10 @@ const RecentTasks: React.FC<RecentTasksProps> = ({ tasks = [], isAdmin, onViewAl
                   </View>
                 </View>
 
-                <View className="mt-3 flex-row gap-3">
+                <View className="mt-3">
                   <Pressable className="flex-1 flex-row items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 active:scale-95">
                     <ArrowRight size={15} color="#0F172A" />
                     <Text className="ml-2 text-sm font-semibold text-slate-900">View</Text>
-                  </Pressable>
-                  <Pressable className="flex-1 flex-row items-center justify-center rounded-2xl bg-pink-600 px-4 py-3 active:scale-95">
-                    <MessageCircleMore size={15} color="#FFFFFF" />
-                    <Text className="ml-2 text-sm font-semibold text-white">Message</Text>
                   </Pressable>
                 </View>
               </Pressable>

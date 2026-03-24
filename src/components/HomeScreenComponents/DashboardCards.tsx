@@ -160,7 +160,7 @@ const DashboardCards: React.FC<DashboardCardsProps> = ({ stats }) => {
           return (
             <Pressable
               key={card.key}
-              className="mb-4 rounded-[24px] border border-slate-100 bg-slate-50 p-4 active:scale-95"
+              className="mb-4 rounded-[24px] border border-slate-100 bg-slate-50 p-4 active:bg-slate-100"
               style={{ width: isWide ? '48.3%' : '100%' }}
             >
               <View className="flex-row items-start justify-between">

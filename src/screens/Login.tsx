@@ -35,6 +35,55 @@ const BRAND_PINK_DARK = "#C41E5E";
 const BRAND_PINK_LIGHT = "#FF6B9D";
 const LOGO_IMAGE = require("../assets/logo.png");
 
+function GradientBackground() {
+  return (
+    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
+      <View
+        style={{
+          flex: 1,
+          backgroundColor: BRAND_PINK,
+          opacity: 0.95,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          top: 0,
+          left: 0,
+          right: 0,
+          bottom: 0,
+          backgroundColor: BRAND_PINK_DARK,
+          opacity: 0.3,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          top: -height * 0.3,
+          right: -width * 0.3,
+          width: width * 0.6,
+          height: width * 0.6,
+          borderRadius: width * 0.3,
+          backgroundColor: BRAND_PINK_LIGHT,
+          opacity: 0.2,
+        }}
+      />
+      <View
+        style={{
+          position: 'absolute',
+          bottom: -height * 0.2,
+          left: -width * 0.2,
+          width: width * 0.5,
+          height: width * 0.5,
+          borderRadius: width * 0.25,
+          backgroundColor: '#FF9FBF',
+          opacity: 0.15,
+        }}
+      />
+    </View>
+  );
+}
+
 export default function Login({ navigation, route }: LoginScreenProps) {
   const { login } = useAuth();
   const insets = useSafeAreaInsets();
@@ -150,54 +199,6 @@ export default function Login({ navigation, route }: LoginScreenProps) {
     }).start();
   };
 
-  // Gradient component for background
-  const GradientBackground = () => (
-    <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0 }}>
-      <View 
-        style={{ 
-          flex: 1,
-          backgroundColor: BRAND_PINK,
-          opacity: 0.95,
-        }} 
-      />
-      <View 
-        style={{ 
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          backgroundColor: BRAND_PINK_DARK,
-          opacity: 0.3,
-        }} 
-      />
-      <View 
-        style={{ 
-          position: 'absolute',
-          top: -height * 0.3,
-          right: -width * 0.3,
-          width: width * 0.6,
-          height: width * 0.6,
-          borderRadius: width * 0.3,
-          backgroundColor: BRAND_PINK_LIGHT,
-          opacity: 0.2,
-        }} 
-      />
-      <View 
-        style={{ 
-          position: 'absolute',
-          bottom: -height * 0.2,
-          left: -width * 0.2,
-          width: width * 0.5,
-          height: width * 0.5,
-          borderRadius: width * 0.25,
-          backgroundColor: '#FF9FBF',
-          opacity: 0.15,
-        }} 
-      />
-    </View>
-  );
-
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
       <SafeAreaView className="flex-1 bg-[#E41F6A]" edges={["top", "bottom"]}>
@@ -264,7 +265,7 @@ export default function Login({ navigation, route }: LoginScreenProps) {
 
                   {/* Main Card */}
                   <Animated.View 
-                    className="rounded-[28px] bg-white/95 backdrop-blur-xl shadow-2xl"
+                    className="rounded-[28px] bg-white/95 shadow-2xl"
                     style={{ transform: [{ scale: scaleAnim }] }}
                   >
                     <View className="px-6 py-7">
@@ -299,7 +300,7 @@ export default function Login({ navigation, route }: LoginScreenProps) {
                             Username
                           </Text>
                           <View 
-                            className={`h-14 flex-row items-center rounded-xl border-2 px-4 transition-all duration-200 ${
+                            className={`h-14 flex-row items-center rounded-xl border-2 px-4 ${
                               focusedInput === "username" 
                                 ? "border-[#E41F6A] bg-pink-50" 
                                 : "border-gray-200 bg-gray-50"
@@ -330,7 +331,7 @@ export default function Login({ navigation, route }: LoginScreenProps) {
                             Password
                           </Text>
                           <View 
-                            className={`h-14 flex-row items-center rounded-xl border-2 px-4 transition-all duration-200 ${
+                            className={`h-14 flex-row items-center rounded-xl border-2 px-4 ${
                               focusedInput === "password" 
                                 ? "border-[#E41F6A] bg-pink-50" 
                                 : "border-gray-200 bg-gray-50"

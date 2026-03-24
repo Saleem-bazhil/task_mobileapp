@@ -23,10 +23,8 @@ import {
 
 import ActivityTimeline from '../components/HomeScreenComponents/ActivityTimeline';
 import DashboardCards from '../components/HomeScreenComponents/DashboardCards';
-import RecentTasks from '../components/HomeScreenComponents/RecentTasks';
 import { useAuth } from '../context/useAuth';
 import { useBottomTabs } from '../navigation/BottomTabs';
-import { fetchConversations } from '../services/chat';
 import { fetchDashboard } from '../services/tasks';
 
 interface DashboardData {
@@ -43,7 +41,7 @@ interface DashboardData {
   activities?: any[];
 }
 
-type SectionKey = 'overview' | 'stats' | 'recent' | 'activity';
+type SectionKey = 'overview' | 'stats' | 'activity';
 
 type NotificationItem = {
   id: string;
@@ -61,15 +59,20 @@ const notificationTone = {
   emerald: { bg: 'bg-emerald-50', icon: '#059669' },
 };
 
-const Home = () => {
+const taskRouteMap = {
+  assigned: 'MyTasks',
+  progress: 'AcceptedTasks',
+  completed: 'CompletedTasks',
+} as const;
+
+const HomeContent = () => {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
-  const { setActiveTab, chatBadgeCount, setChatBadgeCount } = useBottomTabs();
+  const { setActiveTab, chatBadgeCount, setPendingTaskRoute } = useBottomTabs();
   const scrollRef = useRef<ScrollView | null>(null);
   const sectionOffsets = useRef<Record<SectionKey, number>>({
     overview: 0,
     stats: 0,
-    recent: 0,
     activity: 0,
   });
 
@@ -107,37 +110,6 @@ const Home = () => {
       cancelled = true;
     };
   }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadChatState() {
-      try {
-        const conversations = await fetchConversations();
-
-        if (cancelled) {
-          return;
-        }
-
-        const unreadCount = conversations.reduce((count: number, conversation: any) => {
-          const nextCount = Number(conversation.unread_count ?? 0);
-          return count + (Number.isNaN(nextCount) ? 0 : nextCount);
-        }, 0);
-
-        setChatBadgeCount(unreadCount || Math.min(conversations.length, 9));
-      } catch {
-        if (!cancelled) {
-          setChatBadgeCount(0);
-        }
-      }
-    }
-
-    loadChatState();
-
-    return () => {
-      cancelled = true;
-    };
-  }, [setChatBadgeCount]);
 
   const isAdmin = dashboard?.viewer_role === 'admin';
   const userLabel = user?.username || 'User';
@@ -259,9 +231,12 @@ const Home = () => {
               <Bell size={19} color="#334155" />
             </Pressable>
 
-            <View className="h-11 w-11 items-center justify-center rounded-2xl bg-[#1F2937] shadow-md">
+            <Pressable
+              onPress={() => setActiveTab('Profile')}
+              className="h-11 w-11 items-center justify-center rounded-2xl bg-[#1F2937] shadow-md active:bg-slate-800"
+            >
               <Text className="text-base font-bold text-white">{avatarLetter}</Text>
-            </View>
+            </Pressable>
           </View>
         </View>
 
@@ -331,7 +306,10 @@ const Home = () => {
                 return (
                   <Pressable
                     key={card.key}
-                    onPress={() => setActiveTab('Tasks')}
+                    onPress={() => {
+                      setPendingTaskRoute(taskRouteMap[card.key as keyof typeof taskRouteMap]);
+                      setActiveTab('Tasks');
+                    }}
                     className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 active:scale-95"
                   >
                     <View className="flex-row items-center">
@@ -371,10 +349,6 @@ const Home = () => {
           <View className="gap-5">
             <View onLayout={(event) => registerSection('stats', event.nativeEvent.layout.y)}>
               <DashboardCards stats={dashboard?.stats} />
-            </View>
-
-            <View onLayout={(event) => registerSection('recent', event.nativeEvent.layout.y)}>
-              <RecentTasks tasks={dashboard?.recent_tasks} isAdmin={isAdmin} />
             </View>
 
             <View onLayout={(event) => registerSection('activity', event.nativeEvent.layout.y)}>
@@ -451,5 +425,7 @@ const Home = () => {
     </View>
   );
 };
+
+const Home = () => <HomeContent />;
 
 export default Home;

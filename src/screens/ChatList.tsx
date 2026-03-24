@@ -1,10 +1,11 @@
-import React, { startTransition, useCallback, useState } from 'react';
-import { Text, View } from 'react-native';
+import React, { startTransition, useCallback, useEffect, useState } from 'react';
+import { ActivityIndicator, Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 import ConversationSidebar from '../components/ChatScreenComponents/ConversationSidebar';
 import { useAuth } from '../context/useAuth';
+import { useBottomTabs } from '../navigation/BottomTabs';
 import { fetchConversations, fetchUsers, getOrCreateRoom } from '../services/chat';
 import { ChatStackParamList } from '../navigation/ChatStack';
 
@@ -31,6 +32,7 @@ function sortByMostRecent(items: Conversation[]) {
 
 const ChatList: React.FC = () => {
   const { user } = useAuth();
+  const { pendingChatTarget, setPendingChatTarget } = useBottomTabs();
   const navigation = useNavigation<ChatListNavigationProp>();
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
@@ -71,7 +73,7 @@ const ChatList: React.FC = () => {
     }, [])
   );
 
-  const handleCreateConversation = async (selectedUser: User) => {
+  const handleCreateConversation = useCallback(async (selectedUser: User) => {
     setIsCreatingRoom(true);
 
     try {
@@ -100,10 +102,65 @@ const ChatList: React.FC = () => {
     } finally {
       setIsCreatingRoom(false);
     }
-  };
+  }, [conversations, navigation]);
+
+  useEffect(() => {
+    if (!pendingChatTarget || isCreatingRoom) {
+      return;
+    }
+
+    const normalizedUsername = pendingChatTarget.username?.toLowerCase();
+    const existingConversation = conversations.find(
+      (conversation) =>
+        (pendingChatTarget.userId != null &&
+          conversation.other_user?.id === pendingChatTarget.userId) ||
+        (normalizedUsername != null &&
+          conversation.other_user?.username?.toLowerCase() === normalizedUsername)
+    );
+
+    if (existingConversation) {
+      setPendingChatTarget(null);
+      navigation.navigate('ChatRoom', { conversation: existingConversation });
+      return;
+    }
+
+    const matchedUser = users.find(
+      (chatUser) =>
+        (pendingChatTarget.userId != null && chatUser.id === pendingChatTarget.userId) ||
+        (normalizedUsername != null && chatUser.username?.toLowerCase() === normalizedUsername)
+    );
+
+    if (!matchedUser) {
+      if (users.length > 0) {
+        setPendingChatTarget(null);
+        setPageError('We could not find that assigned user in chat right now.');
+      }
+      return;
+    }
+
+    setPendingChatTarget(null);
+    handleCreateConversation(matchedUser);
+  }, [
+    conversations,
+    handleCreateConversation,
+    isCreatingRoom,
+    navigation,
+    pendingChatTarget,
+    setPendingChatTarget,
+    users,
+  ]);
 
   return (
     <View className="flex-1 bg-[#FFF6FA] px-5 pt-4">
+      {pendingChatTarget ? (
+        <View className="mb-4 flex-row items-center rounded-2xl bg-white px-4 py-3 shadow-lg">
+          <ActivityIndicator size="small" color="#E41F6A" />
+          <Text className="ml-3 text-sm font-medium text-slate-600">
+            Opening assignee conversation...
+          </Text>
+        </View>
+      ) : null}
+
       {pageError ? (
         <View className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
           <Text className="text-sm font-medium text-rose-700">{pageError}</Text>
