@@ -125,7 +125,7 @@ export default function Profile() {
   if (isLoading) {
     return (
       <View className="flex-1 bg-slate-50 justify-center items-center">
-        <ActivityIndicator size="large" color="#0284c7" />
+        <ActivityIndicator size="large" color="#E41F6A" />
         <Text className="mt-4 text-slate-500 font-medium">Loading profile data...</Text>
       </View>
     );
@@ -154,7 +154,7 @@ export default function Profile() {
             <Text className="text-3xl font-semibold text-white">{getInitials(user)}</Text>
           </View>
           <View className="flex-1">
-            <Text className="text-[10px] uppercase tracking-[0.2em] text-sky-200 font-bold mb-1">Profile</Text>
+            <Text className="text-[10px] uppercase tracking-[0.2em] text-pink-200 font-bold mb-1">Profile</Text>
             <Text className="text-2xl font-semibold tracking-tight text-white mb-2">{fullName}</Text>
             
             <View className="flex-row items-center bg-white/10 rounded-full px-2 py-1.5 self-start mb-2 border border-white/15">
@@ -170,11 +170,11 @@ export default function Profile() {
 
         <View className="flex-row gap-3">
           <View className="flex-1 rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
-            <Text className="text-[10px] uppercase tracking-[0.15em] text-sky-200 mt-1">Completion</Text>
+            <Text className="text-[10px] uppercase tracking-[0.15em] text-pink-200 mt-1">Completion</Text>
             <Text className="mt-1 text-2xl font-semibold text-white">{derived.completionRate}%</Text>
           </View>
           <View className="flex-1 rounded-2xl border border-white/15 bg-white/10 px-4 py-3">
-            <Text className="text-[10px] uppercase tracking-[0.15em] text-sky-200 mt-1">Focus</Text>
+            <Text className="text-[10px] uppercase tracking-[0.15em] text-pink-200 mt-1">Focus</Text>
             <Text className="mt-1 text-2xl font-semibold text-white">{derived.highPriorityOpen}</Text>
           </View>
         </View>
@@ -187,7 +187,7 @@ export default function Profile() {
           <View className="w-[48%] rounded-3xl border border-slate-200 bg-white p-4 mb-3 shadow-sm shadow-slate-200/50">
             <View className="flex-row items-center justify-between mb-2">
               <Text className="text-xs font-medium text-slate-500">Total tasks</Text>
-              <ListTodo size={18} color="#0284c7" />
+              <ListTodo size={18} color="#E41F6A" />
             </View>
             <Text className="text-2xl font-semibold text-slate-900">{stats?.total ?? 0}</Text>
           </View>

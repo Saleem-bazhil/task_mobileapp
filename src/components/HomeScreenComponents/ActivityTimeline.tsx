@@ -35,14 +35,14 @@ const configFor = (action: ActionType) => {
     case 'in_progress':
       return {
         icon: Clock3,
-        bgClass: 'border-indigo-100 bg-indigo-50',
-        iconColor: '#4338ca',
+        bgClass: 'border-pink-100 bg-pink-50',
+        iconColor: '#E41F6A',
       };
     case 'assigned':
       return {
         icon: UserPlus2,
-        bgClass: 'border-sky-100 bg-sky-50',
-        iconColor: '#0369a1',
+        bgClass: 'border-pink-100 bg-pink-50',
+        iconColor: '#E41F6A',
       };
     default:
       return {

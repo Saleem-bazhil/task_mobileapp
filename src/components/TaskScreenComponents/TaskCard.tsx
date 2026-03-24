@@ -54,7 +54,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
   const getStatusStyles = (stat: string) => {
     switch(stat.toLowerCase()) {
       case 'completed': return { view: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' };
-      case 'in_progress': return { view: 'bg-indigo-50 border-indigo-200', text: 'text-indigo-700' };
+      case 'in_progress': return { view: 'bg-pink-50 border-pink-200', text: 'text-pink-700' };
       case 'pending': return { view: 'bg-amber-50 border-amber-200', text: 'text-amber-700' };
       default: return { view: 'bg-gray-50 border-gray-200', text: 'text-gray-700' };
     }
@@ -112,7 +112,7 @@ const TaskCard: React.FC<TaskCardProps> = ({
             <TouchableOpacity 
               onPress={onAccept} 
               activeOpacity={0.8}
-              className="flex-1 bg-indigo-600 py-2.5 rounded-xl shadow-sm flex-row justify-center items-center gap-1.5"
+              className="flex-1 bg-pink-600 py-2.5 rounded-xl shadow-sm flex-row justify-center items-center gap-1.5"
             >
               <CheckCircle2 color="#ffffff" size={16} />
               <Text className="text-white text-sm font-medium">Accept Task</Text>
@@ -124,10 +124,10 @@ const TaskCard: React.FC<TaskCardProps> = ({
               <TouchableOpacity 
                 onPress={onStart} 
                 activeOpacity={0.8}
-                className="flex-1 bg-white border border-indigo-200 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5"
+                className="flex-1 bg-white border border-pink-200 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5"
               >
-                <Play color="#4338ca" size={16} />
-                <Text className="text-indigo-700 text-sm font-medium">Start</Text>
+                <Play color="#E41F6A" size={16} />
+                <Text className="text-pink-700 text-sm font-medium">Start</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 

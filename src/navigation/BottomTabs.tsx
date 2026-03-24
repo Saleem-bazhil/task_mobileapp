@@ -19,7 +19,7 @@ type TabConfig = {
   component: React.ComponentType;
 };
 
-const PRIMARY_COLOR = "#0f766e";
+const PRIMARY_COLOR = "#E41F6A";
 const INACTIVE_COLOR = "#94a3b8";
 
 const HEADER_TITLES: Record<TabKey, string> = {

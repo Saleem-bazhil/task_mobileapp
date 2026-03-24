@@ -85,7 +85,7 @@ const TaskDashboard: React.FC = () => {
         showsVerticalScrollIndicator={false}
       >
         <View className="mb-6 mt-4 items-center px-2 py-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
-          <Text className="mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-sky-600">
+          <Text className="mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-pink-600">
             Dashboard
           </Text>
           <Text className="text-3xl font-bold tracking-tight text-slate-900 mb-2">
@@ -102,8 +102,8 @@ const TaskDashboard: React.FC = () => {
           title="My Tasks"
           subtitle="Pending and active tasks"
           count="12"
-          iconBgColor="bg-sky-50 border border-sky-100"
-          icon={<ListTodo size={24} color="#0284c7" />}
+          iconBgColor="bg-pink-50 border border-pink-100"
+          icon={<ListTodo size={24} color="#E41F6A" />}
           onPress={() => navigation.navigate('MyTasks')}
         />
         <TaskCard

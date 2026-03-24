@@ -41,7 +41,7 @@ const getStatusClasses = (status: Status) => {
     case 'completed':
       return { bg: 'bg-emerald-100', text: 'text-emerald-700' };
     case 'in_progress':
-      return { bg: 'bg-indigo-100', text: 'text-indigo-700' };
+      return { bg: 'bg-pink-100', text: 'text-pink-700' };
     case 'pending':
       return { bg: 'bg-amber-100', text: 'text-amber-700' };
     default:
@@ -77,8 +77,8 @@ const RecentTasks: React.FC<RecentTasksProps> = ({
           onPress={onViewAll}
           className="flex-row items-center"
         >
-          <Text className="mr-1 text-sm font-medium text-sky-700">View All</Text>
-          <ArrowRight size={16} color="#0369a1" />
+          <Text className="mr-1 text-sm font-medium text-pink-700">View All</Text>
+          <ArrowRight size={16} color="#E41F6A" />
         </Pressable>
       </View>
 

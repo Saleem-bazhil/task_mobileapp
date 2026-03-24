@@ -38,8 +38,8 @@ const CARD_CONFIG = [
     key: 'total',
     title: 'Total Tasks',
     icon: ListTodo,
-    iconBgClass: 'bg-sky-50',
-    iconColor: '#0369a1',
+    iconBgClass: 'bg-pink-50',
+    iconColor: '#E41F6A',
     subtitle: 'All visible tasks',
   },
   {
@@ -54,8 +54,8 @@ const CARD_CONFIG = [
     key: 'in_progress',
     title: 'In Progress',
     icon: PlayCircle,
-    iconBgClass: 'bg-indigo-50',
-    iconColor: '#4338ca',
+    iconBgClass: 'bg-pink-50',
+    iconColor: '#E41F6A',
     subtitle: 'Active work now',
   },
   {

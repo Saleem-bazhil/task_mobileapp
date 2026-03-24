@@ -6,7 +6,9 @@ import BottomTabs from "./BottomTabs";
 
 // 🔥 Define types
 export type RootStackParamList = {
-  Login: undefined;
+  Login: {
+    from?: keyof Omit<RootStackParamList, "Login">;
+  } | undefined;
   MainTabs: undefined;
 };
 
