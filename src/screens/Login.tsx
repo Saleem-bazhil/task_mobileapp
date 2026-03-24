@@ -7,7 +7,6 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
-  SafeAreaView,
   Image,
   Animated,
   Dimensions,
@@ -18,6 +17,7 @@ import {
 } from "react-native";
 import { User, Lock, ArrowRight, Eye, EyeOff, Sparkles } from "lucide-react-native";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { useAuth } from "../context/useAuth";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -37,6 +37,7 @@ const LOGO_IMAGE = require("../assets/logo.png");
 
 export default function Login({ navigation, route }: LoginScreenProps) {
   const { login } = useAuth();
+  const insets = useSafeAreaInsets();
 
   const [loginForm, setLoginForm] = useState<LoginForm>({
     username: "",
@@ -199,18 +200,23 @@ export default function Login({ navigation, route }: LoginScreenProps) {
 
   return (
     <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-      <SafeAreaView className="flex-1 bg-white">
-        <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <SafeAreaView className="flex-1 bg-[#E41F6A]" edges={["top", "bottom"]}>
+        <StatusBar barStyle="light-content" backgroundColor={BRAND_PINK} translucent={false} />
         <KeyboardAvoidingView 
           behavior={Platform.OS === "ios" ? "padding" : "height"}
           className="flex-1"
+          keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
         >
           <ScrollView 
-            contentContainerStyle={{ flexGrow: 1 }}
+            contentContainerStyle={{
+              flexGrow: 1,
+              paddingBottom: Math.max(insets.bottom, 20),
+            }}
             showsVerticalScrollIndicator={false}
             keyboardShouldPersistTaps="handled"
+            keyboardDismissMode={Platform.OS === "ios" ? "interactive" : "on-drag"}
           >
-            <View className="flex-1 relative">
+            <View className="relative min-h-full">
               {/* Gradient Background */}
               <GradientBackground />
               
@@ -229,7 +235,14 @@ export default function Login({ navigation, route }: LoginScreenProps) {
                   transform: [{ translateY: slideAnim }],
                 }}
               >
-                <View className="flex-1 justify-center px-6 pt-14 pb-8">
+                <View
+                  className="flex-1 px-6 pb-8"
+                  style={{
+                    justifyContent: "center",
+                    minHeight: height - insets.top - insets.bottom,
+                    paddingTop: Math.max(insets.top, 24),
+                  }}
+                >
                   {/* Logo & Header Section */}
                   <Animated.View style={{ transform: [{ scale: scaleAnim }] }}>
                     <View className="items-center mb-8">
