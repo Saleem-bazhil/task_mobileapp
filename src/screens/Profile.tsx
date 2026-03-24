@@ -78,9 +78,8 @@ export default function Profile() {
     user?.username ||
     'User';
   const stats = overview?.dashboard?.stats;
-  const tasks = overview?.tasks ?? [];
-
   const derived = useMemo(() => {
+    const tasks = overview?.tasks ?? [];
     const completed = stats?.completed ?? 0;
     const total = stats?.total ?? 0;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
@@ -94,7 +93,7 @@ export default function Profile() {
       .slice(0, 3);
 
     return { completionRate, nextDueTask, recentTasks };
-  }, [stats, tasks]);
+  }, [overview?.tasks, stats]);
 
   const handleLogout = () => {
     logout();

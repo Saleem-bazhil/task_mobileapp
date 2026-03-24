@@ -7,7 +7,7 @@ import {
   logout as logoutRequest,
   register as registerRequest,
 } from '../services/auth';
-import { getAccessToken, getStoredUser } from '../services/storage';
+import { getAccessToken } from '../services/storage';
 
 // 1. Define your strict TypeScript interfaces
 export interface User {

@@ -49,7 +49,7 @@ const AcceptedTasks: React.FC = () => {
               </View>
             ) : null}
             <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Active Delivery</Text>
-            <Text className="mt-2 text-3xl font-extrabold text-slate-900">Accepted tasks</Text>
+            <Text className="mt-2 text-3xl font-extrabold text-slate-900">In Progress</Text>
             <Text className="mt-2 text-sm leading-6 text-slate-500">
               Keep your in-flight work moving and mark tasks complete as you finish them.
             </Text>

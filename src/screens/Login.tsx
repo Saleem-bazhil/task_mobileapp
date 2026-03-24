@@ -77,7 +77,7 @@ export default function Login({ navigation, route }: LoginScreenProps) {
         useNativeDriver: true,
       }),
     ]).start();
-  }, []);
+  }, [fadeAnim, scaleAnim, slideAnim]);
 
   const handleLoginSubmit = async () => {
     if (!loginForm.username || !loginForm.password) {

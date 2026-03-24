@@ -73,7 +73,7 @@ const ConversationSidebar: React.FC<Props> = ({
             <View className="flex-row items-center flex-1">
               <Pressable
                 onPress={() => onModeChange('inbox')}
-                className="mr-3 h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 active:scale-95"
+                className="mr-3 h-10 w-10 items-center justify-center rounded-2xl bg-slate-100"
               >
                 <ArrowLeft size={18} color="#334155" />
               </Pressable>
@@ -91,7 +91,7 @@ const ConversationSidebar: React.FC<Props> = ({
             </View>
             <Pressable
               onPress={() => onModeChange('new')}
-              className="h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 active:scale-95"
+              className="h-11 w-11 items-center justify-center rounded-2xl bg-pink-50"
             >
               <Edit3 size={18} color="#E41F6A" />
             </Pressable>
@@ -123,7 +123,7 @@ const ConversationSidebar: React.FC<Props> = ({
                   key={user.id}
                   onPress={() => onCreateConversation(user)}
                   disabled={isCreatingRoom}
-                  className="flex-row items-center rounded-[24px] bg-slate-50 px-4 py-4 active:scale-95"
+                  className="flex-row items-center rounded-[24px] bg-slate-50 px-4 py-4"
                 >
                   <View className="mr-4 h-12 w-12 items-center justify-center rounded-2xl bg-pink-100">
                     <Text className="text-lg font-bold text-pink-700">
@@ -160,7 +160,7 @@ const ConversationSidebar: React.FC<Props> = ({
                   <Pressable
                     key={conversation.room_id}
                     onPress={() => onOpenConversation(conversation)}
-                    className={`rounded-[24px] px-4 py-4 active:scale-95 ${
+                    className={`rounded-[24px] px-4 py-4 ${
                       isSelected ? 'bg-pink-50' : 'bg-slate-50'
                     }`}
                   >

@@ -11,7 +11,7 @@ type TaskDashboardNavigationProp = NativeStackNavigationProp<TaskStackParamList,
 const CARD_ITEMS = [
   {
     key: 'MyTasks',
-    title: 'My Tasks',
+    title: 'Assigned Tasks',
     subtitle: 'New assignments waiting for action',
     count: '12',
     accent: 'bg-pink-50',
@@ -20,7 +20,7 @@ const CARD_ITEMS = [
   },
   {
     key: 'AcceptedTasks',
-    title: 'Accepted',
+    title: 'In Progress',
     subtitle: 'Work currently in progress',
     count: '5',
     accent: 'bg-blue-50',

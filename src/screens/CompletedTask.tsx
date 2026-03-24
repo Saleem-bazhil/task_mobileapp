@@ -39,7 +39,7 @@ const CompletedTasks = () => {
               </View>
             ) : null}
             <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Archive</Text>
-            <Text className="mt-2 text-3xl font-extrabold text-slate-900">Completed tasks</Text>
+            <Text className="mt-2 text-3xl font-extrabold text-slate-900">Completed</Text>
             <Text className="mt-2 text-sm leading-6 text-slate-500">
               Review previously delivered work and keep a clear record of completed assignments.
             </Text>

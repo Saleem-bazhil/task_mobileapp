@@ -1,8 +1,7 @@
-import React, { startTransition, useCallback, useMemo, useState } from 'react';
+import React, { startTransition, useCallback, useState } from 'react';
 import { Text, View } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { MessageCircleMore, Sparkles } from 'lucide-react-native';
 
 import ConversationSidebar from '../components/ChatScreenComponents/ConversationSidebar';
 import { useAuth } from '../context/useAuth';
@@ -72,11 +71,6 @@ const ChatList: React.FC = () => {
     }, [])
   );
 
-  const activeCount = useMemo(
-    () => conversations.filter((conversation) => Boolean(conversation.last_message)).length,
-    [conversations]
-  );
-
   const handleCreateConversation = async (selectedUser: User) => {
     setIsCreatingRoom(true);
 
@@ -110,30 +104,6 @@ const ChatList: React.FC = () => {
 
   return (
     <View className="flex-1 bg-[#FFF6FA] px-5 pt-4">
-      <View className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-lg">
-        <View className="bg-[#E41F6A] px-5 pb-6 pt-5">
-          <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-white">Messages</Text>
-            <Sparkles size={20} color="#FFFFFF" />
-          </View>
-          <Text className="text-3xl font-extrabold text-white">Chat workspace</Text>
-          <Text className="mt-3 text-sm leading-6 text-white/85">
-            Stay close to active conversations, teammates, and quick updates in one mobile-friendly flow.
-          </Text>
-        </View>
-
-        <View className="flex-row justify-between px-5 py-5">
-          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 mr-2">
-            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Chats</Text>
-            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{conversations.length}</Text>
-          </View>
-          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 ml-2">
-            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Active</Text>
-            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{activeCount}</Text>
-          </View>
-        </View>
-      </View>
-
       {pageError ? (
         <View className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
           <Text className="text-sm font-medium text-rose-700">{pageError}</Text>

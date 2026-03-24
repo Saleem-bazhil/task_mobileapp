@@ -1,17 +1,20 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Modal,
   Pressable,
   ScrollView,
   Text,
   View,
+  useWindowDimensions,
 } from 'react-native';
 import {
   Bell,
   CheckCircle2,
   ChevronRight,
+  Circle,
   ClipboardList,
-  Menu,
+  MessageCircleMore,
   PlayCircle,
   Sparkles,
   X,
@@ -21,6 +24,8 @@ import ActivityTimeline from '../components/HomeScreenComponents/ActivityTimelin
 import DashboardCards from '../components/HomeScreenComponents/DashboardCards';
 import RecentTasks from '../components/HomeScreenComponents/RecentTasks';
 import { useAuth } from '../context/useAuth';
+import { useBottomTabs } from '../navigation/BottomTabs';
+import { fetchConversations } from '../services/chat';
 import { fetchDashboard } from '../services/tasks';
 
 interface DashboardData {
@@ -39,11 +44,25 @@ interface DashboardData {
 
 type SectionKey = 'overview' | 'stats' | 'recent' | 'activity';
 
+type NotificationItem = {
+  id: string;
+  title: string;
+  body: string;
+  tone: 'pink' | 'blue' | 'emerald';
+};
+
 const BRAND_PINK = '#E41F6A';
-const BRAND_PINK_DARK = '#C41E5E';
+
+const notificationTone = {
+  pink: { bg: 'bg-pink-50', icon: '#E41F6A' },
+  blue: { bg: 'bg-blue-50', icon: '#2563EB' },
+  emerald: { bg: 'bg-emerald-50', icon: '#059669' },
+};
 
 const Home = () => {
   const { user } = useAuth();
+  const { width } = useWindowDimensions();
+  const { setActiveTab, chatBadgeCount, setChatBadgeCount } = useBottomTabs();
   const scrollRef = useRef<ScrollView | null>(null);
   const sectionOffsets = useRef<Record<SectionKey, number>>({
     overview: 0,
@@ -55,7 +74,7 @@ const Home = () => {
   const [dashboard, setDashboard] = useState<DashboardData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+  const [isNotificationOpen, setIsNotificationOpen] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
@@ -87,25 +106,87 @@ const Home = () => {
     };
   }, []);
 
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadChatState() {
+      try {
+        const conversations = await fetchConversations();
+
+        if (cancelled) {
+          return;
+        }
+
+        const unreadCount = conversations.reduce((count: number, conversation: any) => {
+          const nextCount = Number(conversation.unread_count ?? 0);
+          return count + (Number.isNaN(nextCount) ? 0 : nextCount);
+        }, 0);
+
+        setChatBadgeCount(unreadCount || Math.min(conversations.length, 9));
+      } catch {
+        if (!cancelled) {
+          setChatBadgeCount(0);
+        }
+      }
+    }
+
+    loadChatState();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [setChatBadgeCount]);
+
   const isAdmin = dashboard?.viewer_role === 'admin';
   const userLabel = user?.username || 'User';
   const avatarLetter = userLabel.charAt(0).toUpperCase() || 'U';
+  const pendingCount = dashboard?.stats?.pending ?? 0;
+  const inProgressCount = dashboard?.stats?.in_progress ?? 0;
+  const completedCount = dashboard?.stats?.completed ?? 0;
+  const dueSoonCount = dashboard?.stats?.due_soon ?? 0;
+  const isCompact = width < 380;
+
+  const notifications = useMemo<NotificationItem[]>(
+    () => [
+      {
+        id: 'assigned',
+        title: `${pendingCount} assigned tasks waiting`,
+        body: 'Review the newest work and move the right items into progress.',
+        tone: 'pink',
+      },
+      {
+        id: 'due-soon',
+        title: `${dueSoonCount} items due soon`,
+        body: 'A quick check-in today will help prevent deadline pressure later.',
+        tone: 'blue',
+      },
+      {
+        id: 'completed',
+        title: `${completedCount} completed this cycle`,
+        body: 'Recent deliveries are closing out well and keeping momentum visible.',
+        tone: 'emerald',
+      },
+    ],
+    [completedCount, dueSoonCount, pendingCount]
+  );
+
+  const notificationCount = notifications.filter((item) => !item.title.startsWith('0 ')).length;
 
   const quickTaskCards = useMemo(
     () => [
       {
-        key: 'my-tasks',
-        title: 'My Tasks',
-        count: dashboard?.stats?.pending ?? 0,
+        key: 'assigned',
+        title: 'Assigned Tasks',
+        count: pendingCount,
         subtitle: 'Ready for your next move',
         icon: ClipboardList,
         iconColor: BRAND_PINK,
         bgClass: 'bg-pink-50',
       },
       {
-        key: 'accepted',
-        title: 'Accepted',
-        count: dashboard?.stats?.in_progress ?? 0,
+        key: 'progress',
+        title: 'In Progress',
+        count: inProgressCount,
         subtitle: 'Currently in motion',
         icon: PlayCircle,
         iconColor: '#2563EB',
@@ -114,37 +195,18 @@ const Home = () => {
       {
         key: 'completed',
         title: 'Completed',
-        count: dashboard?.stats?.completed ?? 0,
+        count: completedCount,
         subtitle: 'Delivered successfully',
         icon: CheckCircle2,
         iconColor: '#059669',
         bgClass: 'bg-emerald-50',
       },
     ],
-    [dashboard?.stats?.completed, dashboard?.stats?.in_progress, dashboard?.stats?.pending]
+    [completedCount, inProgressCount, pendingCount]
   );
-
-  const drawerItems: Array<{
-    key: SectionKey;
-    title: string;
-    subtitle: string;
-  }> = [
-    { key: 'overview', title: 'Overview', subtitle: 'Hero and quick task summary' },
-    { key: 'stats', title: 'Stats', subtitle: 'Counts, progress, and delivery health' },
-    { key: 'recent', title: 'Recent Tasks', subtitle: 'Latest assignments and due dates' },
-    { key: 'activity', title: 'Activity', subtitle: 'Workspace movement and updates' },
-  ];
 
   const registerSection = (key: SectionKey, y: number) => {
     sectionOffsets.current[key] = y;
-  };
-
-  const jumpToSection = (key: SectionKey) => {
-    scrollRef.current?.scrollTo({
-      y: Math.max(sectionOffsets.current[key] - 16, 0),
-      animated: true,
-    });
-    setIsDrawerOpen(false);
   };
 
   return (
@@ -152,18 +214,11 @@ const Home = () => {
       <ScrollView
         ref={scrollRef}
         className="flex-1"
-        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 120 }}
         showsVerticalScrollIndicator={false}
       >
         <View className="mb-5 flex-row items-center justify-between">
-          <Pressable
-            onPress={() => setIsDrawerOpen(true)}
-            className="h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white shadow-md active:scale-95"
-          >
-            <Menu size={20} color="#1F2937" />
-          </Pressable>
-
-          <View className="flex-1 px-4">
+          <View className="flex-1 pr-4">
             <Text className="text-[13px] font-medium text-slate-500">Workspace Dashboard</Text>
             <View className="mt-1 flex-row items-center">
               <View className="mr-2 h-8 w-8 items-center justify-center rounded-2xl bg-pink-100">
@@ -174,10 +229,34 @@ const Home = () => {
           </View>
 
           <View className="flex-row items-center gap-3">
-            <Pressable className="h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white shadow-md active:scale-95">
-              <View className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-pink-500" />
+            <Pressable
+              onPress={() => setActiveTab('Chat')}
+              className="h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white shadow-md active:scale-95"
+            >
+              {chatBadgeCount > 0 ? (
+                <View className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-pink-600 px-1.5 py-0.5">
+                  <Text className="text-center text-[10px] font-bold text-white">
+                    {chatBadgeCount > 99 ? '99+' : chatBadgeCount}
+                  </Text>
+                </View>
+              ) : null}
+              <MessageCircleMore size={19} color="#334155" />
+            </Pressable>
+
+            <Pressable
+              onPress={() => setIsNotificationOpen(true)}
+              className="h-11 w-11 items-center justify-center rounded-2xl border border-white/70 bg-white shadow-md active:scale-95"
+            >
+              {notificationCount > 0 ? (
+                <View className="absolute -right-1 -top-1 min-w-[18px] rounded-full bg-slate-900 px-1.5 py-0.5">
+                  <Text className="text-center text-[10px] font-bold text-white">
+                    {notificationCount}
+                  </Text>
+                </View>
+              ) : null}
               <Bell size={19} color="#334155" />
             </Pressable>
+
             <View className="h-11 w-11 items-center justify-center rounded-2xl bg-[#1F2937] shadow-md">
               <Text className="text-base font-bold text-white">{avatarLetter}</Text>
             </View>
@@ -211,7 +290,7 @@ const Home = () => {
               </View>
             </View>
 
-            <View className="flex-row gap-3">
+            <View className={isCompact ? 'gap-3' : 'flex-row gap-3'}>
               <View className="flex-1 rounded-2xl bg-white/14 px-4 py-3">
                 <Text className="text-xs font-medium uppercase tracking-[1.3px] text-white/75">
                   Total Tasks
@@ -224,9 +303,7 @@ const Home = () => {
                 <Text className="text-xs font-medium uppercase tracking-[1.3px] text-white/75">
                   Due Soon
                 </Text>
-                <Text className="mt-2 text-2xl font-extrabold text-white">
-                  {dashboard?.stats?.due_soon ?? 0}
-                </Text>
+                <Text className="mt-2 text-2xl font-extrabold text-white">{dueSoonCount}</Text>
               </View>
             </View>
 
@@ -237,7 +314,12 @@ const Home = () => {
           <View className="px-5 py-5">
             <View className="mb-4 flex-row items-center justify-between">
               <Text className="text-lg font-bold text-slate-900">Task Spaces</Text>
-              <Text className="text-sm font-medium text-pink-700">Tap cards to explore</Text>
+              <Pressable
+                onPress={() => setActiveTab('Chat')}
+                className="rounded-full bg-pink-50 px-3 py-2 active:scale-95"
+              >
+                <Text className="text-sm font-semibold text-pink-700">Quick Chat</Text>
+              </Pressable>
             </View>
 
             <View className="gap-3">
@@ -247,10 +329,13 @@ const Home = () => {
                 return (
                   <Pressable
                     key={card.key}
+                    onPress={() => setActiveTab('Tasks')}
                     className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 active:scale-95"
                   >
                     <View className="flex-row items-center">
-                      <View className={`mr-4 h-12 w-12 items-center justify-center rounded-2xl ${card.bgClass}`}>
+                      <View
+                        className={`mr-4 h-12 w-12 items-center justify-center rounded-2xl ${card.bgClass}`}
+                      >
                         <Icon size={22} color={card.iconColor} />
                       </View>
                       <View className="flex-1">
@@ -297,55 +382,70 @@ const Home = () => {
         )}
       </ScrollView>
 
-      {isDrawerOpen ? (
-        <View className="absolute inset-0 flex-row">
-          <Pressable className="flex-1 bg-slate-900/30" onPress={() => setIsDrawerOpen(false)} />
-          <View className="w-[84%] max-w-[320px] bg-white px-5 pb-8 pt-6 shadow-2xl">
-            <View className="mb-6 flex-row items-center justify-between">
+      <Pressable
+        onPress={() => setActiveTab('Chat')}
+        className="absolute bottom-6 right-5 flex-row items-center rounded-full bg-pink-600 px-5 py-4 shadow-2xl active:scale-95"
+      >
+        <MessageCircleMore size={18} color="#FFFFFF" />
+        <Text className="ml-2 text-sm font-semibold text-white">Quick Chat</Text>
+        {chatBadgeCount > 0 ? (
+          <View className="ml-3 rounded-full bg-white/20 px-2 py-0.5">
+            <Text className="text-xs font-bold text-white">{chatBadgeCount}</Text>
+          </View>
+        ) : null}
+      </Pressable>
+
+      <Modal
+        visible={isNotificationOpen}
+        animationType="fade"
+        transparent
+        onRequestClose={() => setIsNotificationOpen(false)}
+      >
+        <Pressable
+          className="flex-1 bg-slate-900/35 px-5 py-12"
+          onPress={() => setIsNotificationOpen(false)}
+        >
+          <Pressable className="mt-10 rounded-[28px] bg-white p-5 shadow-2xl active:scale-100">
+            <View className="mb-5 flex-row items-center justify-between">
               <View>
                 <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">
-                  Quick Navigation
+                  Notifications
                 </Text>
-                <Text className="mt-1 text-2xl font-extrabold text-slate-900">Dashboard Menu</Text>
+                <Text className="mt-1 text-2xl font-extrabold text-slate-900">Updates</Text>
               </View>
               <Pressable
-                onPress={() => setIsDrawerOpen(false)}
+                onPress={() => setIsNotificationOpen(false)}
                 className="h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 active:scale-95"
               >
                 <X size={18} color="#334155" />
               </Pressable>
             </View>
 
-            <View className="mb-6 rounded-[24px] bg-pink-50 p-4">
-              <Text className="text-sm font-semibold text-pink-700">Today&apos;s Focus</Text>
-              <Text className="mt-2 text-3xl font-extrabold text-slate-900">
-                {(dashboard?.stats?.pending ?? 0) + (dashboard?.stats?.in_progress ?? 0)}
-              </Text>
-              <Text className="mt-1 text-sm leading-5 text-slate-500">
-                Active and pending items waiting for attention.
-              </Text>
-            </View>
-
             <View className="gap-3">
-              {drawerItems.map((item) => (
-                <Pressable
-                  key={item.key}
-                  onPress={() => jumpToSection(item.key)}
-                  className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 active:scale-95"
-                >
-                  <View className="flex-row items-center justify-between">
-                    <View className="flex-1 pr-3">
-                      <Text className="text-base font-semibold text-slate-900">{item.title}</Text>
-                      <Text className="mt-1 text-sm leading-5 text-slate-500">{item.subtitle}</Text>
+              {notifications.map((item) => {
+                const tone = notificationTone[item.tone];
+
+                return (
+                  <View
+                    key={item.id}
+                    className={`rounded-[24px] border border-slate-100 ${tone.bg} px-4 py-4`}
+                  >
+                    <View className="flex-row items-start">
+                      <View className="mr-3 mt-1">
+                        <Circle size={10} fill={tone.icon} color={tone.icon} />
+                      </View>
+                      <View className="flex-1">
+                        <Text className="text-base font-semibold text-slate-900">{item.title}</Text>
+                        <Text className="mt-1 text-sm leading-5 text-slate-600">{item.body}</Text>
+                      </View>
                     </View>
-                    <ChevronRight size={18} color={BRAND_PINK_DARK} />
                   </View>
-                </Pressable>
-              ))}
+                );
+              })}
             </View>
-          </View>
-        </View>
-      ) : null}
+          </Pressable>
+        </Pressable>
+      </Modal>
     </View>
   );
 };

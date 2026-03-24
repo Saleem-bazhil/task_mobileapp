@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { ArrowRight, CalendarDays, FolderKanban } from 'lucide-react-native';
+import { ArrowRight, CalendarDays, FolderKanban, MessageCircleMore } from 'lucide-react-native';
 
 export type Priority = 'high' | 'medium' | 'low' | string;
 export type Status = 'completed' | 'in_progress' | 'pending' | string;
@@ -83,7 +83,7 @@ const RecentTasks: React.FC<RecentTasksProps> = ({ tasks = [], isAdmin, onViewAl
         </View>
       ) : (
         <View className="gap-3">
-          {tasks.slice(0, 4).map((task) => {
+          {tasks.slice(0, 3).map((task) => {
             const priority = priorityStyles[task.priority] ?? {
               container: 'bg-slate-100',
               text: 'text-slate-700',
@@ -138,6 +138,17 @@ const RecentTasks: React.FC<RecentTasksProps> = ({ tasks = [], isAdmin, onViewAl
                       </Text>
                     </View>
                   </View>
+                </View>
+
+                <View className="mt-3 flex-row gap-3">
+                  <Pressable className="flex-1 flex-row items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 active:scale-95">
+                    <ArrowRight size={15} color="#0F172A" />
+                    <Text className="ml-2 text-sm font-semibold text-slate-900">View</Text>
+                  </Pressable>
+                  <Pressable className="flex-1 flex-row items-center justify-center rounded-2xl bg-pink-600 px-4 py-3 active:scale-95">
+                    <MessageCircleMore size={15} color="#FFFFFF" />
+                    <Text className="ml-2 text-sm font-semibold text-white">Message</Text>
+                  </Pressable>
                 </View>
               </Pressable>
             );

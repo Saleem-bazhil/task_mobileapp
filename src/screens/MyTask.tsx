@@ -48,8 +48,8 @@ const MyTasks = () => {
                 <Text className="text-sm font-medium text-rose-700">{error}</Text>
               </View>
             ) : null}
-            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Pending Queue</Text>
-            <Text className="mt-2 text-3xl font-extrabold text-slate-900">My assigned tasks</Text>
+            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Assigned Queue</Text>
+            <Text className="mt-2 text-3xl font-extrabold text-slate-900">Assigned Tasks</Text>
             <Text className="mt-2 text-sm leading-6 text-slate-500">
               Review new assignments and move them into active work when you are ready.
             </Text>
