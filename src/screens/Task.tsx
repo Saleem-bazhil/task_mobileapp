@@ -7,7 +7,7 @@ import {
   TouchableOpacity,
   View,
 } from 'react-native';
-import Feather from 'react-native-vector-icons/Feather';
+import { Briefcase, CheckCircle, ListTodo, ChevronRight } from 'lucide-react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
@@ -17,7 +17,8 @@ interface TaskCardProps {
   title: string;
   subtitle: string;
   count: string | number;
-  color: string;
+  icon: React.ReactNode;
+  iconBgColor: string;
   onPress: () => void;
 }
 
@@ -25,36 +26,39 @@ const TaskCard: React.FC<TaskCardProps> = ({
   title,
   subtitle,
   count,
-  color,
+  icon,
+  iconBgColor,
   onPress,
 }) => {
   return (
     <TouchableOpacity
-      className="mb-5 rounded-[24px] border border-white/20 p-6 shadow-lg"
-      style={{ backgroundColor: color }}
-      activeOpacity={0.85}
+      className="mb-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)]"
+      activeOpacity={0.7}
       onPress={onPress}
     >
       <View className="flex-row items-center justify-between">
-        <View className="flex-1 pr-4">
-          <Text className="mb-1.5 text-[22px] font-extrabold tracking-wide text-white">
-            {title}
-          </Text>
-          <Text className="text-[15px] font-medium text-white/80">
-            {subtitle}
-          </Text>
+        
+        <View className="flex-row items-center flex-1">
+          <View className={`w-14 h-14 rounded-[1.25rem] mr-4 items-center justify-center ${iconBgColor}`}>
+            {icon}
+          </View>
+          <View className="flex-1 pr-2">
+            <Text className="text-xl font-bold tracking-tight text-slate-900 mb-0.5">
+              {title}
+            </Text>
+            <Text className="text-[13px] font-medium text-slate-500">
+              {subtitle}
+            </Text>
+          </View>
         </View>
 
         <View className="flex-row items-center">
-          <View className="mr-3 min-w-[36px] items-center justify-center rounded-full bg-white/25 px-3 py-1.5">
-            <Text className="text-[15px] font-bold text-white">{count}</Text>
+          <View className="mr-3 min-w-[32px] items-center justify-center rounded-xl bg-slate-100 px-3 py-1.5 border border-slate-200">
+            <Text className="text-sm font-bold text-slate-700">{count}</Text>
           </View>
-          <Feather
-            name="chevron-right"
-            size={24}
-            color="rgba(255,255,255,0.8)"
-          />
+          <ChevronRight size={22} color="#cbd5e1" />
         </View>
+
       </View>
     </TouchableOpacity>
   );
@@ -69,8 +73,8 @@ const TaskDashboard: React.FC = () => {
   const navigation = useNavigation<TaskDashboardNavigationProp>();
 
   return (
-    <View className="flex-1 bg-[#F9FAFB]">
-      <StatusBar barStyle="dark-content" backgroundColor="#F9FAFB" />
+    <View className="flex-1 bg-slate-50">
+      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
 
       <ScrollView
         contentContainerStyle={{
@@ -80,37 +84,42 @@ const TaskDashboard: React.FC = () => {
         }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-8 mt-2 px-2">
-          <Text className="mb-1.5 text-sm font-bold uppercase tracking-widest text-gray-400">
-            Tasks Overview
+        <View className="mb-6 mt-4 items-center px-2 py-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
+          <Text className="mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-sky-600">
+            Dashboard
           </Text>
-          <Text className="mb-2 text-4xl font-black tracking-tight text-[#1A2238]">
-            Hello there
+          <Text className="text-3xl font-bold tracking-tight text-slate-900 mb-2">
+            Your Tasks
           </Text>
-          <Text className="text-base font-medium text-gray-500">
-            You have pending tasks to complete today. Let's get to work!
+          <Text className="text-[15px] font-medium text-slate-500 text-center px-4 leading-6">
+            Review your pending assignments, accepted projects, and completed work.
           </Text>
         </View>
 
+        <Text className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-4 ml-2">Collections</Text>
+
         <TaskCard
-          title="MY TASKS"
+          title="My Tasks"
           subtitle="Pending and active tasks"
           count="12"
-          color="#3A72D8"
+          iconBgColor="bg-sky-50 border border-sky-100"
+          icon={<ListTodo size={24} color="#0284c7" />}
           onPress={() => navigation.navigate('MyTasks')}
         />
         <TaskCard
-          title="ACCEPTED"
+          title="Accepted"
           subtitle="Tasks you have taken on"
           count="5"
-          color="#10B981"
+          iconBgColor="bg-emerald-50 border border-emerald-100"
+          icon={<Briefcase size={24} color="#059669" />}
           onPress={() => navigation.navigate('AcceptedTasks')}
         />
         <TaskCard
-          title="COMPLETED"
+          title="Completed"
           subtitle="Archived and finished work"
           count="48"
-          color="#4B5563"
+          iconBgColor="bg-slate-100 border border-slate-200"
+          icon={<CheckCircle size={24} color="#475569" />}
           onPress={() => navigation.navigate('CompletedTasks')}
         />
       </ScrollView>

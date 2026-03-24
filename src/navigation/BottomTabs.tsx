@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 import { Pressable, Text, View } from "react-native";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 // 1. Updated import for React Native CLI
-import Feather from "react-native-vector-icons/Feather";
+import { Home as HomeIcon, MessageCircle, CheckSquare, User } from "lucide-react-native";
 
 import ChatStack from "../navigation/ChatStack";
 import Home from "../screens/Home";
@@ -78,7 +78,7 @@ export default function BottomTabs() {
         </View>
 
         <View
-          className="border-t border-slate-200 bg-white px-3 pt-2"
+          className="border-t border-slate-200 bg-white px-3 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
           style={{ paddingBottom: Math.max(insets.bottom, 10) }}
         >
           <View className="flex-row">
@@ -94,11 +94,10 @@ export default function BottomTabs() {
                   onPress={() => setActiveTab(tab.key)}
                 >
                   <View className="mb-1">
-                    <Feather
-                      name={tab.iconName}
-                      size={24}
-                      color={focused ? PRIMARY_COLOR : INACTIVE_COLOR}
-                    />
+                    {tab.key === 'Home' && <HomeIcon size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />}
+                    {tab.key === 'Chat' && <MessageCircle size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />}
+                    {tab.key === 'Tasks' && <CheckSquare size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />}
+                    {tab.key === 'Profile' && <User size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />}
                   </View>
                   <Text
                     className="text-xs font-semibold mt-1"

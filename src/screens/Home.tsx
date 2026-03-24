@@ -58,7 +58,7 @@ const Home = () => {
       contentContainerStyle={{ padding: 24, paddingBottom: 40 }}
       showsVerticalScrollIndicator={false}
     >
-      <View className="rounded-[32px] border border-slate-200 bg-white p-8 shadow-sm">
+      <View className="rounded-[1.75rem] border border-slate-200 bg-white p-7 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)]">
         <Text className="text-xs uppercase tracking-widest text-sky-700">
           Overview
         </Text>
@@ -79,7 +79,7 @@ const Home = () => {
       ) : null}
 
       {isLoading ? (
-        <View className="mt-8 items-center justify-center rounded-3xl border border-slate-200 bg-white p-12 shadow-sm">
+        <View className="mt-6 items-center justify-center rounded-[1.75rem] border border-slate-200 bg-white p-12 shadow-sm">
           <ActivityIndicator size="large" color="#0284c7" />
           <Text className="mt-4 text-sm text-slate-500">Loading dashboard...</Text>
         </View>
