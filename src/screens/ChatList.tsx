@@ -1,20 +1,16 @@
-import React, { startTransition, useState, useCallback } from "react";
-import { View, Text } from "react-native";
-import { useFocusEffect, useNavigation } from "@react-navigation/native";
-import { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import React, { startTransition, useCallback, useMemo, useState } from 'react';
+import { Text, View } from 'react-native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { NativeStackNavigationProp } from '@react-navigation/native-stack';
+import { MessageCircleMore, Sparkles } from 'lucide-react-native';
 
-import ConversationSidebar from "../components/ChatScreenComponents/ConversationSidebar";
-import { useAuth } from "../context/useAuth";
-import {
-  fetchConversations,
-  fetchUsers,
-  getOrCreateRoom
-} from "../services/chat";
-import { ChatStackParamList } from "../navigation/ChatStack";
+import ConversationSidebar from '../components/ChatScreenComponents/ConversationSidebar';
+import { useAuth } from '../context/useAuth';
+import { fetchConversations, fetchUsers, getOrCreateRoom } from '../services/chat';
+import { ChatStackParamList } from '../navigation/ChatStack';
 
 type ChatListNavigationProp = NativeStackNavigationProp<ChatStackParamList, 'ChatList'>;
 
-// Types
 interface Conversation {
   room_id: string;
   id?: number;
@@ -28,11 +24,9 @@ interface User {
   username: string;
 }
 
-function sortByMostRecent(items: Conversation[]): Conversation[] {
+function sortByMostRecent(items: Conversation[]) {
   return [...items].sort(
-    (left, right) =>
-      new Date(right.updated_at).getTime() -
-      new Date(left.updated_at).getTime()
+    (left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime()
   );
 }
 
@@ -42,10 +36,10 @@ const ChatList: React.FC = () => {
 
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [users, setUsers] = useState<User[]>([]);
-  const [search, setSearch] = useState<string>("");
-  const [mode, setMode] = useState<string>("inbox");
-  const [isCreatingRoom, setIsCreatingRoom] = useState<boolean>(false);
-  const [pageError, setPageError] = useState<string>("");
+  const [search, setSearch] = useState('');
+  const [mode, setMode] = useState('inbox');
+  const [isCreatingRoom, setIsCreatingRoom] = useState(false);
+  const [pageError, setPageError] = useState('');
 
   useFocusEffect(
     useCallback(() => {
@@ -53,22 +47,19 @@ const ChatList: React.FC = () => {
 
       async function loadSidebarData() {
         try {
-          const [conversationResponse, usersResponse] =
-            await Promise.all([fetchConversations(), fetchUsers()]);
+          const [conversationResponse, usersResponse] = await Promise.all([
+            fetchConversations(),
+            fetchUsers(),
+          ]);
 
           if (cancelled) return;
 
-          const sortedConversations =
-            sortByMostRecent(conversationResponse);
-
-          setConversations(sortedConversations);
+          setConversations(sortByMostRecent(conversationResponse));
           setUsers(usersResponse);
-          setPageError("");
+          setPageError('');
         } catch {
           if (!cancelled) {
-            setPageError(
-              "We couldn't load your chat directory. Please refresh."
-            );
+            setPageError("We couldn't load your chat directory. Please refresh.");
           }
         }
       }
@@ -81,12 +72,16 @@ const ChatList: React.FC = () => {
     }, [])
   );
 
+  const activeCount = useMemo(
+    () => conversations.filter((conversation) => Boolean(conversation.last_message)).length,
+    [conversations]
+  );
+
   const handleCreateConversation = async (selectedUser: User) => {
     setIsCreatingRoom(true);
 
     try {
       const room = await getOrCreateRoom(selectedUser.id);
-
       const existingConversation = conversations.find(
         (conversation) => conversation.room_id === room.room_id
       );
@@ -97,33 +92,51 @@ const ChatList: React.FC = () => {
           id: room.id,
           other_user: selectedUser,
           last_message: null,
-          updated_at: room.updated_at
+          updated_at: room.updated_at,
         };
 
       startTransition(() => {
-        setMode("inbox");
-        setSearch("");
-        setPageError("");
-        navigation.navigate("ChatRoom", { conversation: nextConversation });
+        setMode('inbox');
+        setSearch('');
+        setPageError('');
+        navigation.navigate('ChatRoom', { conversation: nextConversation });
       });
     } catch {
-      setPageError("Unable to open that conversation right now.");
+      setPageError('Unable to open that conversation right now.');
     } finally {
       setIsCreatingRoom(false);
     }
   };
 
-  const handleOpenConversation = (conversation: Conversation) => {
-    navigation.navigate("ChatRoom", { conversation });
-  };
-
   return (
-    <View className="flex-1 bg-white">
-      {pageError ? (
-        <View className="px-4 py-3 bg-rose-50 border-b border-rose-200">
-          <Text className="text-sm text-rose-700">
-            {pageError}
+    <View className="flex-1 bg-[#FFF6FA] px-5 pt-4">
+      <View className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-lg">
+        <View className="bg-[#E41F6A] px-5 pb-6 pt-5">
+          <View className="mb-4 flex-row items-center justify-between">
+            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-white">Messages</Text>
+            <Sparkles size={20} color="#FFFFFF" />
+          </View>
+          <Text className="text-3xl font-extrabold text-white">Chat workspace</Text>
+          <Text className="mt-3 text-sm leading-6 text-white/85">
+            Stay close to active conversations, teammates, and quick updates in one mobile-friendly flow.
           </Text>
+        </View>
+
+        <View className="flex-row justify-between px-5 py-5">
+          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 mr-2">
+            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Chats</Text>
+            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{conversations.length}</Text>
+          </View>
+          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 ml-2">
+            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Active</Text>
+            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{activeCount}</Text>
+          </View>
+        </View>
+      </View>
+
+      {pageError ? (
+        <View className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+          <Text className="text-sm font-medium text-rose-700">{pageError}</Text>
         </View>
       ) : null}
 
@@ -135,7 +148,7 @@ const ChatList: React.FC = () => {
         isCreatingRoom={isCreatingRoom}
         mode={mode}
         onModeChange={setMode}
-        onOpenConversation={handleOpenConversation}
+        onOpenConversation={(conversation) => navigation.navigate('ChatRoom', { conversation })}
         onCreateConversation={handleCreateConversation}
         search={search}
         onSearchChange={setSearch}

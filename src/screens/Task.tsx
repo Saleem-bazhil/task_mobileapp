@@ -1,127 +1,116 @@
 import React from 'react';
-import {
-  Platform,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native';
-import { Briefcase, CheckCircle, ListTodo, ChevronRight } from 'lucide-react-native';
+import { ScrollView, StatusBar, Text, View, Pressable } from 'react-native';
+import { Briefcase, CheckCircle, ChevronRight, ListTodo, Sparkles } from 'lucide-react-native';
 import { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 
 import { TaskStackParamList } from '../navigation/TaskStack';
 
-interface TaskCardProps {
-  title: string;
-  subtitle: string;
-  count: string | number;
-  icon: React.ReactNode;
-  iconBgColor: string;
-  onPress: () => void;
-}
+type TaskDashboardNavigationProp = NativeStackNavigationProp<TaskStackParamList, 'TaskDashboard'>;
 
-const TaskCard: React.FC<TaskCardProps> = ({
-  title,
-  subtitle,
-  count,
-  icon,
-  iconBgColor,
-  onPress,
-}) => {
-  return (
-    <TouchableOpacity
-      className="mb-4 rounded-3xl border border-slate-200 bg-white p-5 shadow-[0_4px_12px_-4px_rgba(0,0,0,0.05)]"
-      activeOpacity={0.7}
-      onPress={onPress}
-    >
-      <View className="flex-row items-center justify-between">
-        
-        <View className="flex-row items-center flex-1">
-          <View className={`w-14 h-14 rounded-[1.25rem] mr-4 items-center justify-center ${iconBgColor}`}>
-            {icon}
-          </View>
-          <View className="flex-1 pr-2">
-            <Text className="text-xl font-bold tracking-tight text-slate-900 mb-0.5">
-              {title}
-            </Text>
-            <Text className="text-[13px] font-medium text-slate-500">
-              {subtitle}
-            </Text>
-          </View>
-        </View>
-
-        <View className="flex-row items-center">
-          <View className="mr-3 min-w-[32px] items-center justify-center rounded-xl bg-slate-100 px-3 py-1.5 border border-slate-200">
-            <Text className="text-sm font-bold text-slate-700">{count}</Text>
-          </View>
-          <ChevronRight size={22} color="#cbd5e1" />
-        </View>
-
-      </View>
-    </TouchableOpacity>
-  );
-};
-
-type TaskDashboardNavigationProp = NativeStackNavigationProp<
-  TaskStackParamList,
-  'TaskDashboard'
->;
+const CARD_ITEMS = [
+  {
+    key: 'MyTasks',
+    title: 'My Tasks',
+    subtitle: 'New assignments waiting for action',
+    count: '12',
+    accent: 'bg-pink-50',
+    iconColor: '#E41F6A',
+    icon: ListTodo,
+  },
+  {
+    key: 'AcceptedTasks',
+    title: 'Accepted',
+    subtitle: 'Work currently in progress',
+    count: '5',
+    accent: 'bg-blue-50',
+    iconColor: '#2563EB',
+    icon: Briefcase,
+  },
+  {
+    key: 'CompletedTasks',
+    title: 'Completed',
+    subtitle: 'Finished and archived deliverables',
+    count: '48',
+    accent: 'bg-emerald-50',
+    iconColor: '#059669',
+    icon: CheckCircle,
+  },
+] as const;
 
 const TaskDashboard: React.FC = () => {
   const navigation = useNavigation<TaskDashboardNavigationProp>();
 
   return (
-    <View className="flex-1 bg-slate-50">
-      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
+    <View className="flex-1 bg-[#FFF6FA]">
+      <StatusBar barStyle="dark-content" backgroundColor="#FFF6FA" />
 
       <ScrollView
-        contentContainerStyle={{
-          paddingHorizontal: 20,
-          paddingBottom: 40,
-          paddingTop: Platform.OS === 'android' ? 40 : 20,
-        }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
       >
-        <View className="mb-6 mt-4 items-center px-2 py-6 bg-white rounded-[2rem] border border-slate-200 shadow-sm">
-          <Text className="mb-2 text-[10px] uppercase tracking-[0.2em] font-bold text-pink-600">
-            Dashboard
-          </Text>
-          <Text className="text-3xl font-bold tracking-tight text-slate-900 mb-2">
-            Your Tasks
-          </Text>
-          <Text className="text-[15px] font-medium text-slate-500 text-center px-4 leading-6">
-            Review your pending assignments, accepted projects, and completed work.
-          </Text>
+        <View className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-lg">
+          <View className="bg-[#E41F6A] px-5 pb-6 pt-5">
+            <View className="mb-4 flex-row items-center justify-between">
+              <View className="rounded-full bg-white/15 px-3 py-1">
+                <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-white">
+                  Task Hub
+                </Text>
+              </View>
+              <Sparkles size={20} color="#FFFFFF" />
+            </View>
+            <Text className="text-3xl font-extrabold leading-9 text-white">Your task workspace</Text>
+            <Text className="mt-3 text-sm leading-6 text-white/85">
+              Move through incoming work, active delivery, and completed output with a cleaner mobile flow.
+            </Text>
+          </View>
+
+          <View className="flex-row justify-between px-5 py-5">
+            <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 mr-2">
+              <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Open</Text>
+              <Text className="mt-2 text-2xl font-extrabold text-slate-900">17</Text>
+            </View>
+            <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 ml-2">
+              <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Completed</Text>
+              <Text className="mt-2 text-2xl font-extrabold text-slate-900">48</Text>
+            </View>
+          </View>
         </View>
 
-        <Text className="text-xs uppercase font-bold tracking-widest text-slate-400 mb-4 ml-2">Collections</Text>
+        <Text className="mb-4 ml-1 text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">
+          Collections
+        </Text>
 
-        <TaskCard
-          title="My Tasks"
-          subtitle="Pending and active tasks"
-          count="12"
-          iconBgColor="bg-pink-50 border border-pink-100"
-          icon={<ListTodo size={24} color="#E41F6A" />}
-          onPress={() => navigation.navigate('MyTasks')}
-        />
-        <TaskCard
-          title="Accepted"
-          subtitle="Tasks you have taken on"
-          count="5"
-          iconBgColor="bg-emerald-50 border border-emerald-100"
-          icon={<Briefcase size={24} color="#059669" />}
-          onPress={() => navigation.navigate('AcceptedTasks')}
-        />
-        <TaskCard
-          title="Completed"
-          subtitle="Archived and finished work"
-          count="48"
-          iconBgColor="bg-slate-100 border border-slate-200"
-          icon={<CheckCircle size={24} color="#475569" />}
-          onPress={() => navigation.navigate('CompletedTasks')}
-        />
+        <View className="gap-4">
+          {CARD_ITEMS.map((item) => {
+            const Icon = item.icon;
+
+            return (
+              <Pressable
+                key={item.key}
+                onPress={() => navigation.navigate(item.key)}
+                className="rounded-[28px] bg-white p-5 shadow-lg active:scale-95"
+              >
+                <View className="flex-row items-center justify-between">
+                  <View className="flex-row items-center flex-1 pr-3">
+                    <View className={`mr-4 h-14 w-14 items-center justify-center rounded-2xl ${item.accent}`}>
+                      <Icon size={24} color={item.iconColor} />
+                    </View>
+                    <View className="flex-1">
+                      <Text className="text-xl font-extrabold text-slate-900">{item.title}</Text>
+                      <Text className="mt-1 text-sm leading-5 text-slate-500">{item.subtitle}</Text>
+                    </View>
+                  </View>
+
+                  <View className="items-end">
+                    <Text className="text-2xl font-extrabold text-slate-900">{item.count}</Text>
+                    <ChevronRight size={18} color="#94A3B8" />
+                  </View>
+                </View>
+              </Pressable>
+            );
+          })}
+        </View>
       </ScrollView>
     </View>
   );

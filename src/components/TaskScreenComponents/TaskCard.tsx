@@ -1,9 +1,7 @@
 import React from 'react';
-import { View, Text, TouchableOpacity } from 'react-native';
-// Make sure to: npm install lucide-react-native react-native-svg
-import { Calendar, CheckCircle2, Play } from 'lucide-react-native';
+import { Pressable, Text, View } from 'react-native';
+import { Calendar, CheckCircle2, Play, Sparkles } from 'lucide-react-native';
 
-// 1. Define the Task Type
 export interface Task {
   id: string | number;
   title: string;
@@ -13,7 +11,6 @@ export interface Task {
   due_date?: string | Date;
 }
 
-// 2. Define the Component Props
 export interface TaskCardProps {
   task: Task;
   isAccepted?: boolean;
@@ -23,132 +20,115 @@ export interface TaskCardProps {
   onComplete?: () => void;
 }
 
-const TaskCard: React.FC<TaskCardProps> = ({ 
-  task, 
-  isAccepted = false, 
-  isCompleted = false, 
-  onAccept, 
-  onStart, 
-  onComplete 
+const priorityStyles: Record<string, { chip: string; text: string }> = {
+  high: { chip: 'bg-rose-50', text: 'text-rose-700' },
+  medium: { chip: 'bg-amber-50', text: 'text-amber-700' },
+  low: { chip: 'bg-emerald-50', text: 'text-emerald-700' },
+};
+
+const statusStyles: Record<string, { chip: string; text: string }> = {
+  completed: { chip: 'bg-emerald-100', text: 'text-emerald-700' },
+  in_progress: { chip: 'bg-pink-100', text: 'text-pink-700' },
+  pending: { chip: 'bg-amber-100', text: 'text-amber-700' },
+};
+
+const formatLabel = (value?: string) => {
+  if (!value) return 'Unknown';
+  if (value === 'in_progress') return 'In Progress';
+  return `${value.charAt(0).toUpperCase()}${value.slice(1)}`;
+};
+
+const TaskCard: React.FC<TaskCardProps> = ({
+  task,
+  isAccepted = false,
+  isCompleted = false,
+  onAccept,
+  onStart,
+  onComplete,
 }) => {
   if (!task) return null;
 
-  // Grab values from backend or fallback to defaults
   const priority = task.priority || 'medium';
   const status = task.status || 'pending';
-
-  // Format strings for clean UI display
-  const displayPriority = priority.charAt(0).toUpperCase() + priority.slice(1);
-  const displayStatus = status === 'in_progress' ? 'In Progress' : status.charAt(0).toUpperCase() + status.slice(1);
-
-  // 3. Split styles for View (background/border) and Text (color)
-  const getPriorityStyles = (prio: string) => {
-    switch (prio.toLowerCase()) {
-      case 'high': return { view: 'bg-rose-100 border-rose-200', text: 'text-rose-700' };
-      case 'medium': return { view: 'bg-amber-100 border-amber-200', text: 'text-amber-700' };
-      case 'low': return { view: 'bg-emerald-100 border-emerald-200', text: 'text-emerald-700' };
-      default: return { view: 'bg-gray-100 border-gray-200', text: 'text-gray-700' };
-    }
+  const priorityStyle = priorityStyles[priority.toLowerCase()] ?? {
+    chip: 'bg-slate-100',
+    text: 'text-slate-700',
   };
-
-  const getStatusStyles = (stat: string) => {
-    switch(stat.toLowerCase()) {
-      case 'completed': return { view: 'bg-emerald-50 border-emerald-200', text: 'text-emerald-700' };
-      case 'in_progress': return { view: 'bg-pink-50 border-pink-200', text: 'text-pink-700' };
-      case 'pending': return { view: 'bg-amber-50 border-amber-200', text: 'text-amber-700' };
-      default: return { view: 'bg-gray-50 border-gray-200', text: 'text-gray-700' };
-    }
+  const statusStyle = statusStyles[status.toLowerCase()] ?? {
+    chip: 'bg-slate-100',
+    text: 'text-slate-700',
   };
-
-  const priorityStyles = getPriorityStyles(priority);
-  const statusStyles = getStatusStyles(status);
 
   return (
-    <View className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 flex-col mb-4">
-      
-      {/* Top Section */}
-      <View className="flex-row justify-between items-start mb-4">
-        <View className={`px-2.5 py-1 rounded-md border ${priorityStyles.view}`}>
-          <Text className={`text-xs font-semibold ${priorityStyles.text}`}>
-            {displayPriority} Priority
+    <View className="mb-4 rounded-[28px] bg-white p-5 shadow-lg">
+      <View className="mb-4 flex-row items-start justify-between">
+        <View className={`rounded-full px-3 py-1 ${priorityStyle.chip}`}>
+          <Text className={`text-xs font-semibold ${priorityStyle.text}`}>
+            {formatLabel(priority)} Priority
           </Text>
         </View>
+        <View className={`rounded-full px-3 py-1 ${statusStyle.chip}`}>
+          <Text className={`text-xs font-semibold ${statusStyle.text}`}>{formatLabel(status)}</Text>
+        </View>
       </View>
 
-      {/* Content */}
-      <View className="mb-4">
-        <Text className="text-lg font-bold text-gray-800 leading-tight mb-2">
-          {task.title}
-        </Text>
-        {/* React Native uses numberOfLines instead of line-clamp */}
-        <Text className="text-sm text-gray-500 leading-relaxed" numberOfLines={2}>
-          {task.description}
-        </Text>
-      </View>
+      <Text className="text-xl font-extrabold leading-7 text-slate-900">{task.title}</Text>
+      <Text className="mt-2 text-sm leading-6 text-slate-500" numberOfLines={3}>
+        {task.description || 'No description provided yet.'}
+      </Text>
 
-      {/* Footer Details */}
-      <View className="mt-auto">
-        <View className="flex-row items-center justify-between mb-4">
+      <View className="mt-5 rounded-[22px] bg-slate-50 px-4 py-3">
+        <View className="flex-row items-center justify-between">
           <View className="flex-row items-center">
-            <Calendar color="#6b7280" size={16} />
-            <Text className="text-gray-500 text-sm ml-1.5">
-              Due: <Text className="text-gray-700 font-medium">
-                {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'TBD'}
-              </Text>
+            <Calendar size={16} color="#94A3B8" />
+            <Text className="ml-2 text-sm font-medium text-slate-600">
+              {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'No due date'}
             </Text>
           </View>
-          
-          <View className={`px-2.5 py-1 rounded-full border ${statusStyles.view}`}>
-            <Text className={`text-xs font-medium ${statusStyles.text}`}>
-              {displayStatus}
-            </Text>
+          <View className="flex-row items-center">
+            <Sparkles size={14} color="#E41F6A" />
+            <Text className="ml-1 text-sm font-semibold text-pink-700">Focused work</Text>
           </View>
         </View>
+      </View>
 
-        {/* Action Buttons */}
-        <View className="flex-row gap-2 pt-4 border-t border-gray-100">
-          
-          {!isAccepted && !isCompleted && (
-            <TouchableOpacity 
-              onPress={onAccept} 
-              activeOpacity={0.8}
-              className="flex-1 bg-pink-600 py-2.5 rounded-xl shadow-sm flex-row justify-center items-center gap-1.5"
+      <View className="mt-5 flex-row gap-3">
+        {!isAccepted && !isCompleted ? (
+          <Pressable
+            onPress={onAccept}
+            className="flex-1 flex-row items-center justify-center rounded-2xl bg-pink-600 px-4 py-3 active:scale-95"
+          >
+            <CheckCircle2 size={16} color="#FFFFFF" />
+            <Text className="ml-2 text-sm font-semibold text-white">Accept Task</Text>
+          </Pressable>
+        ) : null}
+
+        {isAccepted && !isCompleted ? (
+          <>
+            <Pressable
+              onPress={onStart}
+              className="flex-1 flex-row items-center justify-center rounded-2xl border border-pink-200 bg-pink-50 px-4 py-3 active:scale-95"
             >
-              <CheckCircle2 color="#ffffff" size={16} />
-              <Text className="text-white text-sm font-medium">Accept Task</Text>
-            </TouchableOpacity>
-          )}
+              <Play size={16} color="#E41F6A" />
+              <Text className="ml-2 text-sm font-semibold text-pink-700">Start</Text>
+            </Pressable>
 
-          {isAccepted && !isCompleted && (
-            <>
-              <TouchableOpacity 
-                onPress={onStart} 
-                activeOpacity={0.8}
-                className="flex-1 bg-white border border-pink-200 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5"
-              >
-                <Play color="#E41F6A" size={16} />
-                <Text className="text-pink-700 text-sm font-medium">Start</Text>
-              </TouchableOpacity>
+            <Pressable
+              onPress={onComplete}
+              className="flex-1 flex-row items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 active:scale-95"
+            >
+              <CheckCircle2 size={16} color="#FFFFFF" />
+              <Text className="ml-2 text-sm font-semibold text-white">Complete</Text>
+            </Pressable>
+          </>
+        ) : null}
 
-              <TouchableOpacity 
-                onPress={onComplete} 
-                activeOpacity={0.8}
-                className="flex-1 bg-emerald-600 py-2.5 rounded-xl shadow-sm flex-row justify-center items-center gap-1.5"
-              >
-                <CheckCircle2 color="#ffffff" size={16} />
-                <Text className="text-white text-sm font-medium">Complete</Text>
-              </TouchableOpacity>
-            </>
-          )}
-          
-          {isCompleted && (
-             <View className="flex-1 bg-gray-50 border border-gray-200 py-2.5 rounded-xl flex-row justify-center items-center gap-1.5 opacity-70">
-              <CheckCircle2 color="#6b7280" size={16} />
-              <Text className="text-gray-500 text-sm font-medium">Done</Text>
-            </View>
-          )}
-          
-        </View>
+        {isCompleted ? (
+          <View className="flex-1 flex-row items-center justify-center rounded-2xl bg-slate-100 px-4 py-3">
+            <CheckCircle2 size={16} color="#64748B" />
+            <Text className="ml-2 text-sm font-semibold text-slate-500">Completed</Text>
+          </View>
+        ) : null}
       </View>
     </View>
   );

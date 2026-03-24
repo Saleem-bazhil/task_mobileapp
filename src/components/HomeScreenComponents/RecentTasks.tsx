@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { ArrowRight, CalendarDays } from 'lucide-react-native';
+import { ArrowRight, CalendarDays, FolderKanban } from 'lucide-react-native';
 
 export type Priority = 'high' | 'medium' | 'low' | string;
 export type Status = 'completed' | 'in_progress' | 'pending' | string;
@@ -23,119 +23,123 @@ interface RecentTasksProps {
   onViewAll?: () => void;
 }
 
-const getPriorityClasses = (priority: Priority) => {
-  switch (priority) {
-    case 'high':
-      return { bg: 'border-rose-200 bg-rose-50', text: 'text-rose-700' };
-    case 'medium':
-      return { bg: 'border-amber-200 bg-amber-50', text: 'text-amber-700' };
-    case 'low':
-      return { bg: 'border-emerald-200 bg-emerald-50', text: 'text-emerald-700' };
-    default:
-      return { bg: 'border-slate-200 bg-slate-50', text: 'text-slate-700' };
-  }
+const priorityStyles: Record<string, { container: string; text: string }> = {
+  high: { container: 'bg-rose-50', text: 'text-rose-700' },
+  medium: { container: 'bg-amber-50', text: 'text-amber-700' },
+  low: { container: 'bg-emerald-50', text: 'text-emerald-700' },
 };
 
-const getStatusClasses = (status: Status) => {
-  switch (status) {
-    case 'completed':
-      return { bg: 'bg-emerald-100', text: 'text-emerald-700' };
-    case 'in_progress':
-      return { bg: 'bg-pink-100', text: 'text-pink-700' };
-    case 'pending':
-      return { bg: 'bg-amber-100', text: 'text-amber-700' };
-    default:
-      return { bg: 'bg-slate-100', text: 'text-slate-700' };
-  }
+const statusStyles: Record<string, { container: string; text: string }> = {
+  completed: { container: 'bg-emerald-100', text: 'text-emerald-700' },
+  in_progress: { container: 'bg-pink-100', text: 'text-pink-700' },
+  pending: { container: 'bg-amber-100', text: 'text-amber-700' },
 };
 
 const formatStatus = (status?: string) => {
-  if (!status) return 'Unknown';
-  return status === 'in_progress'
-    ? 'In Progress'
-    : `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
+  if (!status) {
+    return 'Unknown';
+  }
+
+  if (status === 'in_progress') {
+    return 'In Progress';
+  }
+
+  return `${status.charAt(0).toUpperCase()}${status.slice(1)}`;
 };
 
-const RecentTasks: React.FC<RecentTasksProps> = ({
-  tasks = [],
-  isAdmin,
-  onViewAll,
-}) => {
+const RecentTasks: React.FC<RecentTasksProps> = ({ tasks = [], isAdmin, onViewAll }) => {
   return (
-    <View className="rounded-3xl border border-slate-200 bg-white shadow-sm">
-      <View className="flex-row items-center justify-between border-b border-slate-200 p-5">
+    <View className="rounded-[28px] bg-white p-5 shadow-lg">
+      <View className="mb-5 flex-row items-center justify-between">
         <View className="flex-1 pr-4">
-          <Text className="text-xl font-semibold text-slate-900">Recent Tasks</Text>
-          <Text className="mt-1 text-sm text-slate-500">
+          <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">
+            Latest Queue
+          </Text>
+          <Text className="mt-2 text-2xl font-extrabold text-slate-900">Recent Tasks</Text>
+          <Text className="mt-1 text-sm leading-5 text-slate-500">
             {isAdmin
-              ? 'Latest assignments across the workspace.'
-              : 'Latest updates on your assigned work.'}
+              ? 'Keep an eye on the newest assignments and handoffs across the workspace.'
+              : 'Review the latest changes across the work currently connected to you.'}
           </Text>
         </View>
 
         <Pressable
           onPress={onViewAll}
-          className="flex-row items-center"
+          className="h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 active:scale-95"
         >
-          <Text className="mr-1 text-sm font-medium text-pink-700">View All</Text>
-          <ArrowRight size={16} color="#E41F6A" />
+          <ArrowRight size={18} color="#E41F6A" />
         </Pressable>
       </View>
 
       {tasks.length === 0 ? (
-        <View className="p-6">
-          <Text className="text-sm text-slate-500">No task activity yet.</Text>
+        <View className="items-center rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-9">
+          <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white">
+            <FolderKanban size={24} color="#CBD5E1" />
+          </View>
+          <Text className="mt-4 text-lg font-semibold text-slate-700">No recent tasks</Text>
+          <Text className="mt-1 text-center text-sm leading-5 text-slate-500">
+            New assignments and updates will appear here as soon as they come in.
+          </Text>
         </View>
       ) : (
-        <View>
-          {tasks.map((task, index) => {
-            const priorityStyle = getPriorityClasses(task.priority);
-            const statusStyle = getStatusClasses(task.status);
-            const isLast = index === tasks.length - 1;
+        <View className="gap-3">
+          {tasks.slice(0, 4).map((task) => {
+            const priority = priorityStyles[task.priority] ?? {
+              container: 'bg-slate-100',
+              text: 'text-slate-700',
+            };
+            const status = statusStyles[task.status] ?? {
+              container: 'bg-slate-100',
+              text: 'text-slate-700',
+            };
 
             return (
-              <View
+              <Pressable
                 key={task.id}
-                className={`p-5 ${isLast ? '' : 'border-b border-slate-100'}`}
+                className="rounded-[24px] border border-slate-100 bg-slate-50 p-4 active:scale-95"
               >
                 <View className="flex-row items-start justify-between">
                   <View className="flex-1 pr-3">
-                    <Text className="text-base font-medium text-slate-900">
-                      {task.title}
-                    </Text>
-                    <Text className="mt-1 text-sm text-slate-500" numberOfLines={1}>
-                      {task.description || 'No description added.'}
+                    <Text className="text-base font-semibold text-slate-900">{task.title}</Text>
+                    <Text className="mt-1 text-sm leading-5 text-slate-500" numberOfLines={2}>
+                      {task.description || 'No description added yet.'}
                     </Text>
                   </View>
 
                   <View className="items-end">
-                    <View className={`rounded-full border px-2.5 py-1 ${priorityStyle.bg}`}>
-                      <Text className={`text-xs font-semibold capitalize ${priorityStyle.text}`}>
+                    <View className={`rounded-full px-3 py-1 ${priority.container}`}>
+                      <Text className={`text-xs font-semibold capitalize ${priority.text}`}>
                         {task.priority}
                       </Text>
                     </View>
-                    <View className={`mt-2 rounded-full px-2.5 py-1 ${statusStyle.bg}`}>
-                      <Text className={`text-xs font-medium ${statusStyle.text}`}>
+                    <View className={`mt-2 rounded-full px-3 py-1 ${status.container}`}>
+                      <Text className={`text-xs font-semibold ${status.text}`}>
                         {formatStatus(task.status)}
                       </Text>
                     </View>
                   </View>
                 </View>
 
-                <View className="mt-4 flex-row items-center justify-between border-t border-slate-50 pt-3">
-                  <Text className="flex-1 pr-3 text-sm font-medium text-slate-700">
-                    {isAdmin ? 'Assigned to: ' : 'Owner: '}
-                    <Text className="font-semibold">{task.user?.username || 'Unassigned'}</Text>
-                  </Text>
-
-                  <View className="flex-row items-center">
-                    <CalendarDays size={14} color="#94a3b8" />
-                    <Text className="ml-1 text-sm text-slate-600">
-                      {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'TBD'}
+                <View className="mt-4 flex-row items-center justify-between border-t border-slate-200 pt-3">
+                  <View className="flex-1 pr-3">
+                    <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">
+                      {isAdmin ? 'Assigned To' : 'Owner'}
+                    </Text>
+                    <Text className="mt-1 text-sm font-medium text-slate-700">
+                      {task.user?.username || 'Unassigned'}
                     </Text>
                   </View>
+
+                  <View className="rounded-2xl bg-white px-3 py-2">
+                    <View className="flex-row items-center">
+                      <CalendarDays size={14} color="#94A3B8" />
+                      <Text className="ml-2 text-sm font-medium text-slate-600">
+                        {task.due_date ? new Date(task.due_date).toLocaleDateString() : 'TBD'}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
-              </View>
+              </Pressable>
             );
           })}
         </View>

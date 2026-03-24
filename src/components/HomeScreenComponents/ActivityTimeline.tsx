@@ -4,6 +4,7 @@ import {
   AlertTriangle,
   CheckCircle2,
   Clock3,
+  LucideIcon,
   UserPlus2,
 } from 'lucide-react-native';
 
@@ -24,79 +25,96 @@ interface ActivityTimelineProps {
   activities?: Activity[];
 }
 
-const configFor = (action: ActionType) => {
+const activityConfig = (
+  action: ActionType
+): { icon: LucideIcon; container: string; iconColor: string; label: string } => {
   switch (action) {
     case 'completed':
       return {
         icon: CheckCircle2,
-        bgClass: 'border-emerald-100 bg-emerald-50',
-        iconColor: '#047857',
+        container: 'bg-emerald-50',
+        iconColor: '#059669',
+        label: 'Completed',
       };
     case 'in_progress':
       return {
         icon: Clock3,
-        bgClass: 'border-pink-100 bg-pink-50',
+        container: 'bg-pink-50',
         iconColor: '#E41F6A',
+        label: 'In Progress',
       };
     case 'assigned':
       return {
         icon: UserPlus2,
-        bgClass: 'border-pink-100 bg-pink-50',
-        iconColor: '#E41F6A',
+        container: 'bg-blue-50',
+        iconColor: '#2563EB',
+        label: 'Assigned',
       };
     default:
       return {
         icon: AlertTriangle,
-        bgClass: 'border-slate-100 bg-slate-50',
-        iconColor: '#334155',
+        container: 'bg-slate-100',
+        iconColor: '#475569',
+        label: 'Update',
       };
   }
 };
 
 const ActivityTimeline: React.FC<ActivityTimelineProps> = ({ activities = [] }) => {
   return (
-    <View className="rounded-3xl border border-slate-200 bg-white p-6 shadow-sm">
-      <View className="mb-6">
-        <Text className="text-xl font-semibold text-slate-900">Activity Timeline</Text>
-        <Text className="mt-1 text-sm text-slate-500">
-          Latest task movement in your workspace.
+    <View className="rounded-[28px] bg-white p-5 shadow-lg">
+      <View className="mb-5">
+        <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">
+          Recent Updates
+        </Text>
+        <Text className="mt-2 text-2xl font-extrabold text-slate-900">Activity Feed</Text>
+        <Text className="mt-1 text-sm leading-5 text-slate-500">
+          A clear stream of movement across the work happening in your space.
         </Text>
       </View>
 
       {activities.length === 0 ? (
-        <View className="rounded-2xl bg-slate-50 p-4">
-          <Text className="text-sm text-slate-500">No recent activity yet.</Text>
+        <View className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-5 py-9">
+          <Text className="text-center text-sm leading-6 text-slate-500">
+            Activity updates will appear here once work starts changing.
+          </Text>
         </View>
       ) : (
-        <View className="border-l border-slate-200">
-          {activities.map((activity, index) => {
-            const { icon: Icon, bgClass, iconColor } = configFor(activity.action);
-            const isLast = index === activities.length - 1;
+        <View className="gap-4">
+          {activities.slice(0, 5).map((activity, index) => {
+            const config = activityConfig(activity.action);
+            const Icon = config.icon;
+            const isLast = index === Math.min(activities.length, 5) - 1;
 
             return (
-              <View
-                key={`${activity.action}-${activity.id}`}
-                className={`relative pl-7 ${isLast ? '' : 'pb-6'}`}
-              >
-                <View className="absolute -left-[18px] top-0 rounded-full bg-white p-1">
-                  <View className={`rounded-full border p-1.5 ${bgClass}`}>
-                    <Icon size={16} color={iconColor} />
+              <View key={`${activity.action}-${activity.id}`} className="flex-row">
+                <View className="mr-4 items-center">
+                  <View className={`h-11 w-11 items-center justify-center rounded-2xl ${config.container}`}>
+                    <Icon size={18} color={config.iconColor} />
                   </View>
+                  {!isLast ? <View className="mt-2 w-px flex-1 bg-slate-200" /> : null}
                 </View>
 
-                <View className="rounded-2xl border border-slate-100 bg-slate-50 p-4">
-                  <Text className="text-sm font-semibold text-slate-900">
-                    {activity.title}
-                  </Text>
-                  <Text className="mt-1 text-sm text-slate-500">
-                    {activity.detail}
-                  </Text>
-                  <Text className="mt-2 text-xs uppercase tracking-widest text-slate-400">
-                    {activity.assigned_to?.username ?? 'Unassigned'}
-                  </Text>
-                  <Text className="mt-3 text-xs text-slate-400">
-                    {new Date(activity.timestamp).toLocaleString()}
-                  </Text>
+                <View className="flex-1 rounded-[24px] border border-slate-100 bg-slate-50 p-4">
+                  <View className="flex-row items-center justify-between">
+                    <Text className="flex-1 pr-3 text-base font-semibold text-slate-900">
+                      {activity.title}
+                    </Text>
+                    <View className={`rounded-full px-3 py-1 ${config.container}`}>
+                      <Text className="text-xs font-semibold text-slate-700">{config.label}</Text>
+                    </View>
+                  </View>
+
+                  <Text className="mt-2 text-sm leading-6 text-slate-500">{activity.detail}</Text>
+
+                  <View className="mt-4 flex-row items-center justify-between">
+                    <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">
+                      {activity.assigned_to?.username ?? 'Unassigned'}
+                    </Text>
+                    <Text className="text-xs font-medium text-slate-400">
+                      {new Date(activity.timestamp).toLocaleString()}
+                    </Text>
+                  </View>
                 </View>
               </View>
             );

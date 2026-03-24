@@ -1,18 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, FlatList, ActivityIndicator } from 'react-native';
-// 1. Import the Task interface from your TaskCard file
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import TaskCard, { Task } from '../components/TaskScreenComponents/TaskCard';
-import { CheckCircle2 } from 'lucide-react-native';
 import api from '../api/Api';
 
 const CompletedTasks = () => {
-  // 2. Explicitly define TypeScript types for your state
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [error, setError] = useState<string>('');
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchCompletedTasks = async () => {
+    async function fetchCompletedTasks() {
       try {
         const res = await api.get('/api/tasks/?status=completed');
         setTasks(Array.isArray(res.data) ? res.data : []);
@@ -22,68 +19,50 @@ const CompletedTasks = () => {
       } finally {
         setIsLoading(false);
       }
-    };
+    }
+
     fetchCompletedTasks();
   }, []);
 
-  // 3. Handle loading and empty states natively
-  const renderEmptyState = () => {
-    if (isLoading) {
-      return (
-        <View className="py-10 items-center justify-center">
-          <ActivityIndicator size="large" color="#10B981" />
-        </View>
-      );
-    }
-    if (!error && tasks.length === 0) {
-      return (
-        <View className="py-10 items-center justify-center">
-          <Text className="text-gray-500 text-base">No completed tasks found.</Text>
-        </View>
-      );
-    }
-    return null;
-  };
-
   return (
-    <View className="flex-1 bg-[#F9FAFB]">
+    <View className="flex-1 bg-[#FFF6FA]">
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id.toString()}
-        contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+        contentContainerStyle={{ paddingHorizontal: 20, paddingTop: 16, paddingBottom: 40 }}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={renderEmptyState}
-        
-        // 4. Header component integrated into the FlatList
         ListHeaderComponent={
-          <View className="mb-6 mt-2">
+          <View className="mb-5 rounded-[28px] bg-white p-5 shadow-lg">
             {error ? (
-              <View className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
-                <Text className="text-sm text-red-700 font-medium">{error}</Text>
+              <View className="mb-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3">
+                <Text className="text-sm font-medium text-rose-700">{error}</Text>
               </View>
             ) : null}
-            
-            <View className="flex-row items-center mb-1">
-              <Text className="text-3xl font-extrabold text-[#1A2238] tracking-tight mr-2">
-                Completed Tasks
-              </Text>
-              {/* Native lucide icon requires explicit color and size */}
-              <CheckCircle2 color="#10B981" size={28} />
-            </View>
-            <Text className="text-gray-500 text-base">
-              Review your previously completed assignments and history.
+            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Archive</Text>
+            <Text className="mt-2 text-3xl font-extrabold text-slate-900">Completed tasks</Text>
+            <Text className="mt-2 text-sm leading-6 text-slate-500">
+              Review previously delivered work and keep a clear record of completed assignments.
             </Text>
           </View>
         }
-        
-        // 5. Render the TaskCards
-        renderItem={({ item }) => (
-          <TaskCard 
-            task={item} 
-            isAccepted={false} 
-            isCompleted={true} 
-          />
-        )}
+        ListEmptyComponent={
+          <View className="rounded-[28px] bg-white px-6 py-12 shadow-lg">
+            {isLoading ? (
+              <View className="items-center">
+                <ActivityIndicator size="large" color="#E41F6A" />
+                <Text className="mt-4 text-sm text-slate-500">Loading completed tasks...</Text>
+              </View>
+            ) : !error ? (
+              <View className="items-center">
+                <Text className="text-lg font-semibold text-slate-700">No completed tasks</Text>
+                <Text className="mt-2 text-center text-sm leading-6 text-slate-500">
+                  Finished work will appear here once tasks are marked complete.
+                </Text>
+              </View>
+            ) : null}
+          </View>
+        }
+        renderItem={({ item }) => <TaskCard task={item} isCompleted={true} />}
       />
     </View>
   );

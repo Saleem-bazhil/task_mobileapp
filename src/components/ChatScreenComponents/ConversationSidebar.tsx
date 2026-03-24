@@ -1,13 +1,6 @@
-import React from "react";
-import {
-  View,
-  Text,
-  TextInput,
-  Pressable,
-  ScrollView,
-  ActivityIndicator
-} from "react-native";
-import { Search, Edit3, ArrowLeft } from "lucide-react-native";
+import React from 'react';
+import { ActivityIndicator, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import { ArrowLeft, Edit3, MessageCircleMore, Search } from 'lucide-react-native';
 
 interface User {
   id: number;
@@ -30,7 +23,7 @@ interface Props {
   conversations: Conversation[];
   activeRoomId: string | null;
   isCreatingRoom: boolean;
-  mode: string; // 'inbox' | 'new'
+  mode: string;
   onModeChange: (mode: string) => void;
   onOpenConversation: (c: Conversation) => void;
   onCreateConversation: (u: User) => void;
@@ -51,146 +44,141 @@ const ConversationSidebar: React.FC<Props> = ({
   search,
   onSearchChange,
 }) => {
-  const showNewChatList = mode === "new";
+  const showNewChatList = mode === 'new';
 
   const getDisplayName = (u?: User) => {
-    if (!u) return "Unknown";
+    if (!u) return 'Unknown';
     return u.first_name ? `${u.first_name} ${u.last_name || ''}`.trim() : u.username;
   };
 
-  const formatShortTime = (isoString?: string) => {
-    if (!isoString) return "";
-    const date = new Date(isoString);
-    if (isNaN(date.getTime())) return "";
-    
-    const now = new Date();
-    const isToday = date.getDate() === now.getDate() && date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
-    const isYesterday = new Date(now.getTime() - 86400000).getDate() === date.getDate();
-
-    if (isToday) return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    if (isYesterday) return "Yesterday";
+  const formatShortTime = (value?: string | number | Date) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
     return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
 
-  const filteredConversations = conversations.filter(c =>
-    getDisplayName(c.other_user).toLowerCase().includes(search.toLowerCase())
+  const filteredConversations = conversations.filter((conversation) =>
+    getDisplayName(conversation.other_user).toLowerCase().includes(search.toLowerCase())
   );
-
-  const filteredUsers = users.filter(u =>
-    u.id !== currentUser?.id && getDisplayName(u).toLowerCase().includes(search.toLowerCase())
+  const filteredUsers = users.filter(
+    (user) => user.id !== currentUser?.id && getDisplayName(user).toLowerCase().includes(search.toLowerCase())
   );
 
   return (
-    <View className="bg-white flex-1 flex-col">
-      {/* HEADER */}
-      <View className="px-4 py-3 bg-white flex-row justify-between items-center h-[56px]">
+    <View className="flex-1 rounded-[28px] bg-white p-5 shadow-lg">
+      <View className="mb-4 flex-row items-center justify-between">
         {showNewChatList ? (
-          <View className="flex-row items-center">
-            <Pressable onPress={() => onModeChange("inbox")} className="mr-3">
-              <ArrowLeft size={24} color="#008069" />
-            </Pressable>
-            <View>
-              <Text className="font-semibold text-[19px] text-[#111b21]">New Chat</Text>
-              <Text className="text-xs text-[#54656f]">{filteredUsers.length} contacts</Text>
+          <>
+            <View className="flex-row items-center flex-1">
+              <Pressable
+                onPress={() => onModeChange('inbox')}
+                className="mr-3 h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 active:scale-95"
+              >
+                <ArrowLeft size={18} color="#334155" />
+              </Pressable>
+              <View className="flex-1">
+                <Text className="text-sm font-semibold uppercase tracking-[1.4px] text-pink-700">New Chat</Text>
+                <Text className="mt-1 text-xl font-extrabold text-slate-900">{filteredUsers.length} contacts</Text>
+              </View>
             </View>
-          </View>
+          </>
         ) : (
           <>
-            <Text className="font-bold text-[22px] text-[#111b21]">Chats</Text>
-            <View className="flex-row gap-4 items-center">
-              <Pressable onPress={() => onModeChange("new")}>
-                <Edit3 size={22} color="#54656f" />
-              </Pressable>
+            <View className="flex-1">
+              <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Messaging</Text>
+              <Text className="mt-2 text-2xl font-extrabold text-slate-900">Chats</Text>
             </View>
+            <Pressable
+              onPress={() => onModeChange('new')}
+              className="h-11 w-11 items-center justify-center rounded-2xl bg-pink-50 active:scale-95"
+            >
+              <Edit3 size={18} color="#E41F6A" />
+            </Pressable>
           </>
         )}
       </View>
 
-      {/* SEARCH */}
-      <View className="px-3 pb-2 pt-1 bg-white border-b border-gray-100">
-        <View className="flex-row items-center bg-[#f0f2f5] rounded-xl px-3 h-9">
-          <Search size={18} color="#54656f" />
-          <TextInput
-            value={search}
-            onChangeText={onSearchChange}
-            placeholder={showNewChatList ? "Search name or number" : "Search or start new chat"}
-            placeholderTextColor="#8696a0"
-            className="flex-1 ml-3 text-[15px] text-[#111b21] pb-1.5 pt-1.5"
-          />
-        </View>
+      <View className="mb-4 flex-row items-center rounded-2xl bg-slate-50 px-4 py-3">
+        <Search size={18} color="#94A3B8" />
+        <TextInput
+          value={search}
+          onChangeText={onSearchChange}
+          placeholder={showNewChatList ? 'Search contacts' : 'Search conversations'}
+          placeholderTextColor="#94A3B8"
+          className="ml-3 flex-1 text-base text-slate-800"
+        />
       </View>
 
-      {/* LIST */}
-      <ScrollView className="flex-1 bg-white" showsVerticalScrollIndicator={false}>
+      <ScrollView showsVerticalScrollIndicator={false}>
         {showNewChatList ? (
-          <>
-            <Text className="px-4 py-3 text-sm font-medium text-[#008069] tracking-widest">
-              CONTACTS ON WHATSAPP
-            </Text>
+          <View className="gap-3">
             {filteredUsers.length === 0 ? (
-              <Text className="text-[#8696a0] text-center mt-6 text-base">No contacts found.</Text>
+              <View className="items-center rounded-[24px] bg-slate-50 px-5 py-10">
+                <Text className="text-center text-sm leading-6 text-slate-500">No contacts found.</Text>
+              </View>
             ) : (
-              filteredUsers.map(u => (
+              filteredUsers.map((user) => (
                 <Pressable
-                  key={u.id}
-                  onPress={() => onCreateConversation(u)}
+                  key={user.id}
+                  onPress={() => onCreateConversation(user)}
                   disabled={isCreatingRoom}
-                  className="flex-row items-center px-4 py-3 active:bg-[#f5f6f6]"
+                  className="flex-row items-center rounded-[24px] bg-slate-50 px-4 py-4 active:scale-95"
                 >
-                  <View className="w-12 h-12 rounded-full bg-slate-200 justify-center items-center mr-4">
-                    <Text className="text-[#54656f] font-semibold text-lg">{getDisplayName(u).charAt(0).toUpperCase()}</Text>
+                  <View className="mr-4 h-12 w-12 items-center justify-center rounded-2xl bg-pink-100">
+                    <Text className="text-lg font-bold text-pink-700">
+                      {getDisplayName(user).charAt(0).toUpperCase()}
+                    </Text>
                   </View>
-                  <View className="flex-1 border-b border-[#f0f2f5] pb-3 pt-1">
-                    <Text className="text-[17px] text-[#111b21]">{getDisplayName(u)}</Text>
-                    <Text className="text-[14px] text-[#54656f] mt-0.5" numberOfLines={1}>Available</Text>
+                  <View className="flex-1">
+                    <Text className="text-base font-semibold text-slate-900">{getDisplayName(user)}</Text>
+                    <Text className="mt-1 text-sm text-slate-500">Available to chat</Text>
                   </View>
-                  {isCreatingRoom && <ActivityIndicator size="small" color="#008069" />}
+                  {isCreatingRoom ? <ActivityIndicator size="small" color="#E41F6A" /> : null}
                 </Pressable>
               ))
             )}
-          </>
+          </View>
         ) : (
-          <>
-            <View className="flex-row items-center py-2 px-4 border-b border-gray-100">
-              <Text className="text-[#54656f] text-sm flex-1 font-medium">Archive</Text>
-            </View>
+          <View className="gap-3">
             {filteredConversations.length === 0 ? (
-              <Text className="text-[#8696a0] text-center mt-12 text-[15px]">No chats yet. Click the edit icon to start a new chat.</Text>
+              <View className="items-center rounded-[24px] bg-slate-50 px-5 py-10">
+                <View className="h-14 w-14 items-center justify-center rounded-2xl bg-white">
+                  <MessageCircleMore size={24} color="#CBD5E1" />
+                </View>
+                <Text className="mt-4 text-lg font-semibold text-slate-700">No chats yet</Text>
+                <Text className="mt-2 text-center text-sm leading-6 text-slate-500">
+                  Start a new conversation to begin messaging from this workspace.
+                </Text>
+              </View>
             ) : (
-              filteredConversations.map(c => {
-                const isSelected = activeRoomId === c.room_id;
-                const lastMsgText = c.last_message?.content || "";
-                
+              filteredConversations.map((conversation) => {
+                const isSelected = activeRoomId === conversation.room_id;
+                const name = getDisplayName(conversation.other_user);
+
                 return (
                   <Pressable
-                    key={c.room_id}
-                    onPress={() => onOpenConversation(c)}
-                    className={`flex-row px-3 active:bg-[#f5f6f6] ${isSelected ? "bg-[#f0f2f5]" : "bg-white"}`}
+                    key={conversation.room_id}
+                    onPress={() => onOpenConversation(conversation)}
+                    className={`rounded-[24px] px-4 py-4 active:scale-95 ${
+                      isSelected ? 'bg-pink-50' : 'bg-slate-50'
+                    }`}
                   >
-                    <View className="py-3 pr-3">
-                      <View className="w-12 h-12 rounded-full bg-slate-300 justify-center items-center">
-                        <Text className="text-white font-bold text-xl">
-                          {getDisplayName(c.other_user).charAt(0).toUpperCase()}
-                        </Text>
+                    <View className="flex-row items-center">
+                      <View className="mr-4 h-12 w-12 items-center justify-center rounded-2xl bg-slate-200">
+                        <Text className="text-lg font-bold text-slate-700">{name.charAt(0).toUpperCase()}</Text>
                       </View>
-                    </View>
-                    
-                    <View className="flex-1 py-3 justify-center border-b border-[#f0f2f5]">
-                      <View className="flex-row justify-between items-center mb-0.5">
-                        <Text className="font-normal text-[17px] text-[#111b21] flex-1 mr-2" numberOfLines={1}>
-                          {getDisplayName(c.other_user)}
-                        </Text>
-                        <Text className={`text-[12px] ${isSelected ? 'text-[#111b21]' : 'text-[#8696a0]'}`}>
-                          {formatShortTime(c.updated_at as string)}
-                        </Text>
-                      </View>
-                      
-                      <View className="flex-row items-center">
-                        {c.last_message && c.last_message.sender?.username === currentUser?.username ? (
-                          <Text className="mr-1 text-[12px] text-[#53bdeb]">Seen</Text>
-                        ) : null}
-                        <Text className="text-[14px] text-[#54656f] flex-1" numberOfLines={1}>
-                          {lastMsgText}
+                      <View className="flex-1 pr-3">
+                        <View className="flex-row items-center justify-between">
+                          <Text className="flex-1 text-base font-semibold text-slate-900" numberOfLines={1}>
+                            {name}
+                          </Text>
+                          <Text className="ml-3 text-xs font-medium text-slate-400">
+                            {formatShortTime(conversation.updated_at)}
+                          </Text>
+                        </View>
+                        <Text className="mt-1 text-sm text-slate-500" numberOfLines={1}>
+                          {conversation.last_message?.content || 'No messages yet'}
                         </Text>
                       </View>
                     </View>
@@ -198,7 +186,7 @@ const ConversationSidebar: React.FC<Props> = ({
                 );
               })
             )}
-          </>
+          </View>
         )}
       </ScrollView>
     </View>
