@@ -1,14 +1,13 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, Text, View } from 'react-native';
 import {
-  CalendarDays,
   CheckCircle2,
   Clock3,
   LogOut,
   Mail,
   ShieldCheck,
   Sparkles,
-  User2,
+  Target,
 } from 'lucide-react-native';
 import { useNavigation } from '@react-navigation/native';
 
@@ -23,13 +22,6 @@ function formatRole(role?: string) {
     .join(' ');
 }
 
-function formatDate(dateValue?: string) {
-  if (!dateValue) return 'Not set';
-  const date = new Date(dateValue);
-  if (Number.isNaN(date.getTime())) return 'Not set';
-  return new Intl.DateTimeFormat('en-US', { dateStyle: 'medium', timeStyle: 'short' }).format(date);
-}
-
 function getInitials(user: any) {
   const first = user?.first_name?.trim()?.[0];
   const last = user?.last_name?.trim()?.[0];
@@ -37,7 +29,14 @@ function getInitials(user: any) {
   return [first, last].filter(Boolean).join('').toUpperCase() || username?.toUpperCase() || 'U';
 }
 
-export default function Profile() {
+const overviewCards = [
+  { label: 'Total', key: 'total', icon: Target, color: '#7C3AED', bg: 'bg-violet-50' },
+  { label: 'Pending', key: 'pending', icon: Clock3, color: '#E41F6A', bg: 'bg-pink-50' },
+  { label: 'In Progress', key: 'in_progress', icon: Clock3, color: '#2563EB', bg: 'bg-blue-50' },
+  { label: 'Completed', key: 'completed', icon: CheckCircle2, color: '#059669', bg: 'bg-emerald-50' },
+] as const;
+
+const ProfileContent = () => {
   const { user, logout } = useAuth();
   const navigation = useNavigation<any>();
   const [overview, setOverview] = useState<any>(null);
@@ -78,22 +77,13 @@ export default function Profile() {
     user?.username ||
     'User';
   const stats = overview?.dashboard?.stats;
+
   const derived = useMemo(() => {
-    const tasks = overview?.tasks ?? [];
     const completed = stats?.completed ?? 0;
     const total = stats?.total ?? 0;
     const completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
-
-    const nextDueTask = tasks
-      .filter((task: any) => task.due_date && task.status !== 'completed')
-      .sort((left: any, right: any) => new Date(left.due_date).getTime() - new Date(right.due_date).getTime())[0];
-
-    const recentTasks = [...tasks]
-      .sort((left: any, right: any) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
-      .slice(0, 3);
-
-    return { completionRate, nextDueTask, recentTasks };
-  }, [overview?.tasks, stats]);
+    return { completionRate };
+  }, [stats]);
 
   const handleLogout = () => {
     logout();
@@ -113,42 +103,73 @@ export default function Profile() {
   }
 
   return (
-    <ScrollView className="flex-1 bg-[#FFF6FA]" contentContainerStyle={{ padding: 20, paddingBottom: 40 }}>
-      <View className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-lg">
-        <View className="bg-[#E41F6A] px-5 pb-6 pt-5">
+    <ScrollView
+      className="flex-1 bg-[#FFF6FA]"
+      contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
+      showsVerticalScrollIndicator={false}
+    >
+      <View className="mb-5 overflow-hidden rounded-[30px] bg-white shadow-lg">
+        <View className="bg-[#E41F6A] px-5 pb-7 pt-5">
           <View className="mb-4 flex-row items-center justify-between">
-            <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-white">Profile</Text>
+            <View className="rounded-full bg-white/15 px-3 py-1">
+              <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-white">
+                Profile
+              </Text>
+            </View>
             <Sparkles size={20} color="#FFFFFF" />
           </View>
 
           <View className="flex-row items-center">
-            <View className="mr-4 h-20 w-20 items-center justify-center rounded-[24px] bg-white/15">
+            <View className="mr-4 h-20 w-20 items-center justify-center rounded-[26px] bg-white/15">
               <Text className="text-3xl font-extrabold text-white">{getInitials(user)}</Text>
             </View>
+
             <View className="flex-1">
               <Text className="text-3xl font-extrabold text-white">{fullName}</Text>
+              <Text className="mt-1 text-sm text-white/85">@{user?.username || 'user'}</Text>
+
               <View className="mt-3 flex-row flex-wrap gap-2">
-                <View className="flex-row items-center rounded-full bg-white/15 px-3 py-1">
+                <View className="flex-row items-center rounded-full bg-white/15 px-3 py-1.5">
                   <ShieldCheck size={13} color="#FFFFFF" />
-                  <Text className="ml-2 text-xs font-semibold text-white">{formatRole((user as any)?.role)}</Text>
+                  <Text className="ml-2 text-xs font-semibold text-white">
+                    {formatRole((user as any)?.role)}
+                  </Text>
                 </View>
-                <View className="flex-row items-center rounded-full bg-white/15 px-3 py-1">
+                <View className="flex-row items-center rounded-full bg-white/15 px-3 py-1.5">
                   <Mail size={13} color="#FFFFFF" />
-                  <Text className="ml-2 text-xs font-semibold text-white">{user?.email || 'No email'}</Text>
+                  <Text className="ml-2 text-xs font-semibold text-white">
+                    {user?.email || 'No email'}
+                  </Text>
                 </View>
               </View>
             </View>
           </View>
         </View>
 
-        <View className="flex-row justify-between px-5 py-5">
-          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 mr-2">
-            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Completion</Text>
-            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{derived.completionRate}%</Text>
-          </View>
-          <View className="flex-1 rounded-2xl bg-slate-50 px-4 py-3 ml-2">
-            <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Total Tasks</Text>
-            <Text className="mt-2 text-2xl font-extrabold text-slate-900">{stats?.total ?? 0}</Text>
+        <View className="px-5 py-5">
+          <View className="overflow-hidden rounded-[24px] bg-[#3B1F31] px-4 py-4">
+            <View className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-pink-400/15" />
+            <View className="absolute -bottom-8 -left-4 h-28 w-28 rounded-full bg-white/5" />
+            <View className="flex-row items-center justify-between">
+              <View>
+                <Text className="text-sm font-medium text-white/70">Completion Rate</Text>
+                <Text className="mt-2 text-3xl font-extrabold text-white">
+                  {derived.completionRate}%
+                </Text>
+              </View>
+              <View className="rounded-2xl bg-white/10 px-3 py-2">
+                <Text className="text-xs font-semibold uppercase tracking-[1.2px] text-white/75">
+                  {stats?.total ?? 0} Tasks
+                </Text>
+              </View>
+            </View>
+
+            <View className="mt-4 h-2 rounded-full bg-white/12">
+              <View
+                className="h-2 rounded-full bg-pink-500"
+                style={{ width: `${Math.min(derived.completionRate, 100)}%` }}
+              />
+            </View>
           </View>
         </View>
       </View>
@@ -159,82 +180,69 @@ export default function Profile() {
         </View>
       ) : null}
 
-      <View className="mb-5 rounded-[28px] bg-white p-5 shadow-lg">
-        <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Snapshot</Text>
+      <View className="mb-5 rounded-[30px] bg-white p-5 shadow-lg">
+        <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">
+          Snapshot
+        </Text>
         <Text className="mt-2 text-2xl font-extrabold text-slate-900">Workload overview</Text>
+        <Text className="mt-1 text-sm leading-5 text-slate-500">
+          A quick view of active work, completed delivery, and approaching deadlines.
+        </Text>
 
         <View className="mt-5 flex-row flex-wrap justify-between">
-          {[
-            { label: 'In Progress', value: stats?.in_progress ?? 0, icon: Clock3, color: '#2563EB' },
-            { label: 'Completed', value: stats?.completed ?? 0, icon: CheckCircle2, color: '#059669' },
-            { label: 'Due Soon', value: stats?.due_soon ?? 0, icon: CalendarDays, color: '#E41F6A' },
-            { label: 'Profile', value: 1, icon: User2, color: '#7C3AED' },
-          ].map((item) => {
+          {overviewCards.map((item) => {
             const Icon = item.icon;
 
             return (
-              <View key={item.label} className="mb-4 w-[48%] rounded-[24px] bg-slate-50 p-4">
-                <View className="mb-3 h-11 w-11 items-center justify-center rounded-2xl bg-white">
+              <View
+                key={item.label}
+                className={`mb-4 w-[48.3%] ${item.label === 'Total' ? 'rounded-[28px]' : 'rounded-[24px]'} ${item.bg} p-4`}
+              >
+                <View className="mb-4 h-12 w-12 items-center justify-center rounded-2xl bg-white">
                   <Icon size={20} color={item.color} />
                 </View>
                 <Text className="text-sm font-medium text-slate-500">{item.label}</Text>
-                <Text className="mt-1 text-2xl font-extrabold text-slate-900">{item.value}</Text>
+                <Text className="mt-1 text-2xl font-extrabold text-slate-900">
+                  {stats?.[item.key] ?? 0}
+                </Text>
               </View>
             );
           })}
         </View>
       </View>
 
-      <View className="mb-5 rounded-[28px] bg-white p-5 shadow-lg">
-        <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Next Up</Text>
-        <Text className="mt-2 text-2xl font-extrabold text-slate-900">
-          {derived.nextDueTask?.title || 'Nothing scheduled'}
-        </Text>
-        <Text className="mt-2 text-sm leading-6 text-slate-500">
-          {derived.nextDueTask
-            ? derived.nextDueTask.description || 'This task has no description yet.'
-            : 'You do not have any incomplete tasks with a due date.'}
-        </Text>
-        <View className="mt-4 rounded-[24px] bg-slate-50 px-4 py-4">
-          <Text className="text-xs font-semibold uppercase tracking-[1.3px] text-slate-400">Due date</Text>
-          <Text className="mt-2 text-base font-semibold text-slate-900">
-            {formatDate(derived.nextDueTask?.due_date)}
-          </Text>
-        </View>
-      </View>
-
-      <View className="mb-5 rounded-[28px] bg-white p-5 shadow-lg">
-        <Text className="text-xs font-semibold uppercase tracking-[1.4px] text-pink-700">Recent Activity</Text>
-        <Text className="mt-2 text-2xl font-extrabold text-slate-900">Latest updates</Text>
-
-        <View className="mt-4 gap-3">
-          {derived.recentTasks.length > 0 ? (
-            derived.recentTasks.map((task: any) => (
-              <View key={task.id} className="rounded-[24px] bg-slate-50 p-4">
-                <Text className="text-base font-semibold text-slate-900">{task.title}</Text>
-                <Text className="mt-1 text-sm leading-5 text-slate-500" numberOfLines={2}>
-                  {task.description || 'No description provided.'}
-                </Text>
-                <Text className="mt-3 text-xs font-medium text-slate-400">
-                  Updated {formatDate(task.updated_at)}
-                </Text>
-              </View>
-            ))
-          ) : (
-            <View className="rounded-[24px] bg-slate-50 px-5 py-8">
-              <Text className="text-center text-sm leading-6 text-slate-500">No task activity yet.</Text>
-            </View>
-          )}
-        </View>
-      </View>
-
       <Pressable
         onPress={handleLogout}
-        className="flex-row items-center justify-center rounded-[28px] bg-white px-5 py-4 shadow-lg active:scale-95"
+        className="overflow-hidden rounded-[22px] bg-[#2A1521] px-5 py-4 shadow-lg active:bg-[#341A29]"
       >
-        <LogOut size={18} color="#E11D48" />
-        <Text className="ml-2 text-sm font-semibold text-rose-600">Log Out</Text>
+        <View className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-pink-400/10" />
+        <View className="absolute -bottom-8 left-8 h-20 w-20 rounded-full bg-white/5" />
+
+        <View className="flex-row items-center justify-between">
+          <View className="flex-row items-center">
+            <View className="h-12 w-12 items-center justify-center rounded-2xl bg-white/10">
+              <LogOut size={18} color="#FFFFFF" />
+            </View>
+
+            <View className="ml-4">
+              <Text className="text-base font-semibold text-white">Log Out</Text>
+              <Text className="mt-1 text-sm text-white/65">
+                Securely sign out from your workspace
+              </Text>
+            </View>
+          </View>
+
+          <View className="rounded-full bg-white/10 px-3 py-1.5">
+            <Text className="text-xs font-semibold uppercase tracking-[1.2px] text-pink-200">
+              Exit
+            </Text>
+          </View>
+        </View>
       </Pressable>
     </ScrollView>
   );
-}
+};
+
+const Profile = () => <ProfileContent />;
+
+export default Profile;
