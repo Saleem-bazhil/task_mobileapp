@@ -15,6 +15,8 @@ type BottomTabContextValue = {
   setActiveTab: (tab: TabKey) => void;
   chatBadgeCount: number;
   setChatBadgeCount: (count: number) => void;
+  isTabBarVisible: boolean;
+  setIsTabBarVisible: (visible: boolean) => void;
 };
 
 type TabConfig = {
@@ -74,8 +76,26 @@ export function useBottomTabs() {
 
 export default function BottomTabs() {
   const [activeTab, setActiveTab] = useState<TabKey>('Home');
-  const [chatBadgeCount, setChatBadgeCount] = useState(0);
+  const [tabUiState, setTabUiState] = useState({
+    chatBadgeCount: 0,
+    isTabBarVisible: true,
+  });
   const insets = useSafeAreaInsets();
+  const { chatBadgeCount, isTabBarVisible } = tabUiState;
+
+  const setChatBadgeCount = (count: number) => {
+    setTabUiState((prev) => ({
+      ...prev,
+      chatBadgeCount: count,
+    }));
+  };
+
+  const setIsTabBarVisible = (visible: boolean) => {
+    setTabUiState((prev) => ({
+      ...prev,
+      isTabBarVisible: visible,
+    }));
+  };
 
   const ActiveScreen = useMemo(() => {
     return TABS.find((tab) => tab.key === activeTab)?.component ?? Home;
@@ -83,7 +103,14 @@ export default function BottomTabs() {
 
   return (
     <BottomTabContext.Provider
-      value={{ activeTab, setActiveTab, chatBadgeCount, setChatBadgeCount }}
+      value={{
+        activeTab,
+        setActiveTab,
+        chatBadgeCount,
+        setChatBadgeCount,
+        isTabBarVisible,
+        setIsTabBarVisible,
+      }}
     >
       <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
         <View className="flex-1 bg-slate-50">
@@ -97,60 +124,62 @@ export default function BottomTabs() {
             <ActiveScreen />
           </View>
 
-          <View
-            className="border-t border-slate-200 bg-white px-3 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
-            style={{ paddingBottom: Math.max(insets.bottom, 10) }}
-          >
-            <View className="flex-row">
-              {TABS.map((tab) => {
-                const focused = tab.key === activeTab;
-                const showChatBadge = tab.key === 'Chat' && chatBadgeCount > 0;
+          {isTabBarVisible ? (
+            <View
+              className="border-t border-slate-200 bg-white px-3 pt-2 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)]"
+              style={{ paddingBottom: Math.max(insets.bottom, 10) }}
+            >
+              <View className="flex-row">
+                {TABS.map((tab) => {
+                  const focused = tab.key === activeTab;
+                  const showChatBadge = tab.key === 'Chat' && chatBadgeCount > 0;
 
-                return (
-                  <Pressable
-                    key={tab.key}
-                    accessibilityRole="button"
-                    accessibilityState={{ selected: focused }}
-                    className="flex-1 items-center py-2"
-                    onPress={() => setActiveTab(tab.key)}
-                  >
-                    <View className="mb-1">
-                      {tab.key === 'Home' ? (
-                        <HomeIcon size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
-                      ) : null}
-                      {tab.key === 'Chat' ? (
-                        <View>
-                          <MessageCircle
-                            size={24}
-                            color={focused ? PRIMARY_COLOR : INACTIVE_COLOR}
-                          />
-                          {showChatBadge ? (
-                            <View className="absolute -right-2 -top-2 min-w-[18px] rounded-full bg-pink-600 px-1.5 py-0.5">
-                              <Text className="text-center text-[10px] font-bold text-white">
-                                {chatBadgeCount > 99 ? '99+' : chatBadgeCount}
-                              </Text>
-                            </View>
-                          ) : null}
-                        </View>
-                      ) : null}
-                      {tab.key === 'Tasks' ? (
-                        <CheckSquare size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
-                      ) : null}
-                      {tab.key === 'Profile' ? (
-                        <User size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
-                      ) : null}
-                    </View>
-                    <Text
-                      className="mt-1 text-xs font-semibold"
-                      style={{ color: focused ? PRIMARY_COLOR : INACTIVE_COLOR }}
+                  return (
+                    <Pressable
+                      key={tab.key}
+                      accessibilityRole="button"
+                      accessibilityState={{ selected: focused }}
+                      className="flex-1 items-center py-2"
+                      onPress={() => setActiveTab(tab.key)}
                     >
-                      {tab.label}
-                    </Text>
-                  </Pressable>
-                );
-              })}
+                      <View className="mb-1">
+                        {tab.key === 'Home' ? (
+                          <HomeIcon size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
+                        ) : null}
+                        {tab.key === 'Chat' ? (
+                          <View>
+                            <MessageCircle
+                              size={24}
+                              color={focused ? PRIMARY_COLOR : INACTIVE_COLOR}
+                            />
+                            {showChatBadge ? (
+                              <View className="absolute -right-2 -top-2 min-w-[18px] rounded-full bg-pink-600 px-1.5 py-0.5">
+                                <Text className="text-center text-[10px] font-bold text-white">
+                                  {chatBadgeCount > 99 ? '99+' : chatBadgeCount}
+                                </Text>
+                              </View>
+                            ) : null}
+                          </View>
+                        ) : null}
+                        {tab.key === 'Tasks' ? (
+                          <CheckSquare size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
+                        ) : null}
+                        {tab.key === 'Profile' ? (
+                          <User size={24} color={focused ? PRIMARY_COLOR : INACTIVE_COLOR} />
+                        ) : null}
+                      </View>
+                      <Text
+                        className="mt-1 text-xs font-semibold"
+                        style={{ color: focused ? PRIMARY_COLOR : INACTIVE_COLOR }}
+                      >
+                        {tab.label}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
             </View>
-          </View>
+          ) : null}
         </View>
       </SafeAreaView>
     </BottomTabContext.Provider>

@@ -1,7 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
+import {
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  Text,
+  TextInput,
+  View,
+} from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { ArrowLeft, MoreHorizontal, Send } from 'lucide-react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import api from '../../api/Api';
 import { getAccessToken } from '../../services/storage';
 
@@ -40,6 +49,7 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
   const ws = useRef<WebSocket | null>(null);
   const scrollRef = useRef<ScrollView>(null);
   const navigation = useNavigation<any>();
+  const insets = useSafeAreaInsets();
 
   const room = conversation?.room_id;
   const otherUser = conversation?.other_user;
@@ -173,7 +183,8 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
   return (
     <KeyboardAvoidingView
       className="flex-1 rounded-[28px] bg-white shadow-lg"
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      keyboardVerticalOffset={Platform.OS === 'ios' ? 12 : 0}
     >
       <View className="flex-row items-center border-b border-slate-100 px-4 py-4">
         <Pressable
@@ -197,6 +208,8 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
       <ScrollView
         ref={scrollRef}
         className="flex-1 bg-[#FFF9FB] px-4 py-4"
+        contentContainerStyle={{ paddingBottom: 12 }}
+        keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
         {messages.map((message) => (
@@ -220,7 +233,10 @@ const ChatWindow: React.FC<Props> = ({ conversation, currentUser, onMessagePersi
         ))}
       </ScrollView>
 
-      <View className="flex-row items-end border-t border-slate-100 px-4 py-4">
+      <View
+        className="flex-row items-end border-t border-slate-100 px-4 pt-4"
+        style={{ paddingBottom: Math.max(insets.bottom, 14) }}
+      >
         <View className="flex-1 rounded-[24px] bg-slate-50 px-4 py-3">
           <TextInput
             value={messageText}

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import {
   ActivityIndicator,
+  Image,
   Modal,
   Pressable,
   ScrollView,
@@ -52,6 +53,7 @@ type NotificationItem = {
 };
 
 const BRAND_PINK = '#E41F6A';
+const DASHBOARD_LOGO = require('../assets/logo.png');
 
 const notificationTone = {
   pink: { bg: 'bg-pink-50', icon: '#E41F6A' },
@@ -221,8 +223,8 @@ const Home = () => {
           <View className="flex-1 pr-4">
             <Text className="text-[13px] font-medium text-slate-500">Workspace Dashboard</Text>
             <View className="mt-1 flex-row items-center">
-              <View className="mr-2 h-8 w-8 items-center justify-center rounded-2xl bg-pink-100">
-                <Sparkles size={16} color={BRAND_PINK} />
+              <View className="mr-3 h-10 w-10 items-center justify-center rounded-2xl bg-white shadow-sm">
+                <Image source={DASHBOARD_LOGO} className="h-7 w-7" resizeMode="contain" />
               </View>
               <Text className="text-xl font-extrabold text-slate-900">Renderways</Text>
             </View>
