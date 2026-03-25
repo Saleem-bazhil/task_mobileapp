@@ -8,6 +8,7 @@ import { useAuth } from '../context/useAuth';
 import { useBottomTabs } from '../navigation/BottomTabs';
 import { fetchConversations, fetchUsers, getOrCreateRoom } from '../services/chat';
 import { ChatStackParamList } from '../navigation/ChatStack';
+import Header from '../components/Header';
 
 type ChatListNavigationProp = NativeStackNavigationProp<ChatStackParamList, 'ChatList'>;
 
@@ -151,7 +152,9 @@ const ChatList: React.FC = () => {
   ]);
 
   return (
-    <View className="flex-1 bg-[#FFF6FA] px-5 pt-4">
+    <View className="flex-1 bg-[#FFF6FA]">
+      <Header title="Messages" />
+      <View className="flex-1 px-5 pt-4">
       {pendingChatTarget ? (
         <View className="mb-4 flex-row items-center rounded-2xl bg-white px-4 py-3 shadow-lg">
           <ActivityIndicator size="small" color="#E41F6A" />
@@ -180,6 +183,7 @@ const ChatList: React.FC = () => {
         search={search}
         onSearchChange={setSearch}
       />
+      </View>
     </View>
   );
 };

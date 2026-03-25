@@ -19,7 +19,8 @@ export type PendingTaskRoute =
   | 'TaskDashboard'
   | 'MyTasks'
   | 'AcceptedTasks'
-  | 'CompletedTasks';
+  | 'CompletedTasks'
+  | null;
 
 type BottomTabContextValue = {
   activeTab: TabKey;
@@ -50,7 +51,7 @@ const defaultBottomTabContext: BottomTabContextValue = {
   setIsTabBarVisible: () => {},
   pendingChatTarget: null,
   setPendingChatTarget: () => {},
-  pendingTaskRoute: 'TaskDashboard',
+  pendingTaskRoute: null,
   setPendingTaskRoute: () => {},
 };
 
@@ -102,7 +103,7 @@ export default function BottomTabs() {
     chatBadgeCount: 0,
     isTabBarVisible: true,
     pendingChatTarget: null as PendingChatTarget,
-    pendingTaskRoute: 'TaskDashboard' as PendingTaskRoute,
+    pendingTaskRoute: null as PendingTaskRoute,
   });
   const insets = useSafeAreaInsets();
   const { chatBadgeCount, isTabBarVisible, pendingChatTarget, pendingTaskRoute } = tabUiState;
@@ -156,12 +157,6 @@ export default function BottomTabs() {
     >
       <SafeAreaView className="flex-1 bg-slate-50" edges={['top']}>
         <View className="flex-1 bg-slate-50">
-          <View className="border-b border-slate-200 bg-white px-6 py-4">
-            <Text className="text-center text-lg font-extrabold tracking-wide text-slate-900">
-              {HEADER_TITLES[activeTab]}
-            </Text>
-          </View>
-
           <View className="flex-1">
             <ActiveScreen />
           </View>

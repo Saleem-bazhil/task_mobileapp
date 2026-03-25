@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import {
   Bell,
+  Clock,
   CheckCircle2,
   ChevronRight,
   Circle,
@@ -21,10 +22,11 @@ import {
   X,
 } from 'lucide-react-native';
 
+import Header from '../components/Header';
 import ActivityTimeline from '../components/HomeScreenComponents/ActivityTimeline';
 import DashboardCards from '../components/HomeScreenComponents/DashboardCards';
 import { useAuth } from '../context/useAuth';
-import { useBottomTabs } from '../navigation/BottomTabs';
+import { useBottomTabs, type PendingTaskRoute } from '../navigation/BottomTabs';
 import { fetchDashboard } from '../services/tasks';
 
 interface DashboardData {
@@ -59,16 +61,11 @@ const notificationTone = {
   emerald: { bg: 'bg-emerald-50', icon: '#059669' },
 };
 
-const taskRouteMap = {
-  assigned: 'MyTasks',
-  progress: 'AcceptedTasks',
-  completed: 'CompletedTasks',
-} as const;
-
 const HomeContent = () => {
   const { user } = useAuth();
   const { width } = useWindowDimensions();
   const { setActiveTab, chatBadgeCount, setPendingTaskRoute } = useBottomTabs();
+  
   const scrollRef = useRef<ScrollView | null>(null);
   const sectionOffsets = useRef<Record<SectionKey, number>>({
     overview: 0,
@@ -150,7 +147,8 @@ const HomeContent = () => {
     () => [
       {
         key: 'assigned',
-        title: 'Assigned Tasks',
+        route: 'MyTasks',
+        title: 'Open Tasks',
         count: pendingCount,
         subtitle: 'Ready for your next move',
         icon: ClipboardList,
@@ -159,6 +157,7 @@ const HomeContent = () => {
       },
       {
         key: 'progress',
+        route: 'AcceptedTasks',
         title: 'In Progress',
         count: inProgressCount,
         subtitle: 'Currently in motion',
@@ -167,7 +166,18 @@ const HomeContent = () => {
         bgClass: 'bg-blue-50',
       },
       {
+        key: 'pending',
+        route: 'MyTasks', // Adjust this to 'PendingTasks' if you created a dedicated screen for it!
+        title: 'Pending',
+        count: pendingCount,
+        subtitle: 'Waiting for your attention',
+        icon: Clock,
+        iconColor: '#F59E0B',
+        bgClass: 'bg-amber-50',
+      },
+      {
         key: 'completed',
+        route: 'CompletedTasks',
         title: 'Completed',
         count: completedCount,
         subtitle: 'Delivered successfully',
@@ -185,6 +195,7 @@ const HomeContent = () => {
 
   return (
     <View className="flex-1 bg-[#FFF6FA]">
+      <Header title="Dashboard" />
       <ScrollView
         ref={scrollRef}
         className="flex-1"
@@ -244,6 +255,7 @@ const HomeContent = () => {
           onLayout={(event) => registerSection('overview', event.nativeEvent.layout.y)}
           className="mb-5 overflow-hidden rounded-[28px] bg-white shadow-lg"
         >
+          {/* Dashboard Header UI remains unchanged */}
           <View className="bg-[#E41F6A] px-5 pb-6 pt-5">
             <View className="mb-5 flex-row items-start justify-between">
               <View className="flex-1 pr-4">
@@ -306,8 +318,9 @@ const HomeContent = () => {
                 return (
                   <Pressable
                     key={card.key}
+                    // Switch to the Tasks tab and let TaskStack handle the nested navigation.
                     onPress={() => {
-                      setPendingTaskRoute(taskRouteMap[card.key as keyof typeof taskRouteMap]);
+                      setPendingTaskRoute(card.route as PendingTaskRoute);
                       setActiveTab('Tasks');
                     }}
                     className="rounded-2xl border border-slate-100 bg-slate-50 px-4 py-4 active:scale-95"
@@ -358,6 +371,7 @@ const HomeContent = () => {
         )}
       </ScrollView>
 
+      {/* Quick Chat FAB & Modals remain unchanged */}
       <Pressable
         onPress={() => setActiveTab('Chat')}
         className="absolute bottom-6 right-5 flex-row items-center rounded-full bg-pink-600 px-5 py-4 shadow-2xl active:scale-95"

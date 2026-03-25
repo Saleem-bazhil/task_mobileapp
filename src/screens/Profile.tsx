@@ -13,6 +13,7 @@ import { useNavigation } from '@react-navigation/native';
 
 import { useAuth } from '../context/useAuth';
 import { fetchProfileOverview } from '../services/tasks';
+import Header from '../components/Header';
 
 function formatRole(role?: string) {
   if (!role) return 'Employee';
@@ -103,8 +104,10 @@ const ProfileContent = () => {
   }
 
   return (
-    <ScrollView
-      className="flex-1 bg-[#FFF6FA]"
+    <View className="flex-1 bg-[#FFF6FA]">
+      <Header title="Profile" />
+      <ScrollView
+        className="flex-1 bg-[#FFF6FA]"
       contentContainerStyle={{ padding: 20, paddingBottom: 40 }}
       showsVerticalScrollIndicator={false}
     >
@@ -239,7 +242,8 @@ const ProfileContent = () => {
           </View>
         </View>
       </Pressable>
-    </ScrollView>
+      </ScrollView>
+    </View>
   );
 };
 

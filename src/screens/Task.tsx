@@ -1,10 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, Pressable, ScrollView, StatusBar, Text, View } from 'react-native';
-import { Briefcase, CheckCircle, ChevronRight, ListTodo, Sparkles } from 'lucide-react-native';
+import { Briefcase, CheckCircle, ChevronRight, ListTodo, Sparkles, Clock } from 'lucide-react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 import { TaskStackParamList } from '../navigation/TaskStack';
 import { fetchDashboard } from '../services/tasks';
+import { useBottomTabs } from '../navigation/BottomTabs';
+import Header from '../components/Header';
 
 type TaskDashboardScreenProps = NativeStackScreenProps<TaskStackParamList, 'TaskDashboard'>;
 
@@ -65,16 +67,28 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
   const cardItems = useMemo(
     () => [
       {
-        key: 'MyTasks' as const,
-        title: 'Assigned Tasks',
-        subtitle: 'New assignments waiting for action',
-        count: pendingCount,
+        key: 'OpenTasks',
+        route: 'MyTasks' as const,
+        title: 'Open Tasks',
+        subtitle: 'All active assignments',
+        count: openCount,
         accent: 'bg-pink-50',
         iconColor: '#E41F6A',
         icon: ListTodo,
       },
       {
-        key: 'AcceptedTasks' as const,
+        key: 'PendingTasks',
+        route: 'MyTasks' as const,
+        title: 'Pending',
+        subtitle: 'New assignments waiting for action',
+        count: pendingCount,
+        accent: 'bg-amber-50',
+        iconColor: '#D97706',
+        icon: Clock,
+      },
+      {
+        key: 'AcceptedTasks',
+        route: 'AcceptedTasks' as const,
         title: 'In Progress',
         subtitle: 'Work currently in progress',
         count: inProgressCount,
@@ -83,7 +97,8 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
         icon: Briefcase,
       },
       {
-        key: 'CompletedTasks' as const,
+        key: 'CompletedTasks',
+        route: 'CompletedTasks' as const,
         title: 'Completed',
         subtitle: 'Finished and archived deliverables',
         count: completedCount,
@@ -92,7 +107,7 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
         icon: CheckCircle,
       },
     ],
-    [completedCount, inProgressCount, pendingCount]
+    [completedCount, inProgressCount, pendingCount, openCount]
   );
 
   return (
@@ -155,7 +170,7 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
             return (
               <Pressable
                 key={item.key}
-                onPress={() => navigation.navigate(item.key)}
+                onPress={() => navigation.navigate(item.route)}
                 className="rounded-[28px] bg-white p-5 active:scale-95"
               >
                 <View className="flex-row items-center justify-between">
@@ -186,9 +201,20 @@ const TaskHubContent: React.FC<TaskHubContentProps> = ({ navigation }) => {
 };
 
 const TaskDashboardContent: React.FC<TaskDashboardScreenProps> = ({ navigation }) => {
+  const { pendingTaskRoute, setPendingTaskRoute } = useBottomTabs();
+
+  useEffect(() => {
+    if (pendingTaskRoute && pendingTaskRoute !== 'TaskDashboard') {
+      const routeToNavigate = pendingTaskRoute;
+      setPendingTaskRoute(null);
+      navigation.navigate(routeToNavigate as any);
+    }
+  }, [pendingTaskRoute, navigation, setPendingTaskRoute]);
+
   return (
     <View className="flex-1 bg-[#FFF6FA]">
       <StatusBar barStyle="dark-content" backgroundColor="#FFF6FA" />
+      <Header title="Tasks" />
       <TaskHubContent navigation={navigation} />
     </View>
   );

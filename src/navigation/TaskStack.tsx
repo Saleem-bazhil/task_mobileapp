@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 
 import AcceptedTasks from '../screens/AcceptedTask';
@@ -17,12 +17,25 @@ export type TaskStackParamList = {
 const Stack = createNativeStackNavigator<TaskStackParamList>();
 
 const TaskStack: React.FC = () => {
-  const { pendingTaskRoute } = useBottomTabs();
+  const { pendingTaskRoute, setPendingTaskRoute } = useBottomTabs();
+
+  const initialRouteName = useMemo<TaskStackParamList extends any ? keyof TaskStackParamList : never>(() => {
+    if (pendingTaskRoute && pendingTaskRoute !== 'TaskDashboard') {
+      return pendingTaskRoute;
+    }
+    return 'TaskDashboard';
+  }, [pendingTaskRoute]);
+
+  useEffect(() => {
+    if (pendingTaskRoute) {
+      setPendingTaskRoute(null);
+    }
+  }, [pendingTaskRoute, setPendingTaskRoute]);
 
   return (
     <Stack.Navigator
-      key={pendingTaskRoute}
-      initialRouteName={pendingTaskRoute}
+      key={initialRouteName}
+      initialRouteName={initialRouteName}
       screenOptions={{
         headerShown: false,
       }}

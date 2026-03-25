@@ -25,6 +25,7 @@ export interface TaskCardProps {
   onAccept?: () => void;
   onStart?: () => void;
   onComplete?: () => void;
+  onStatusChange?: (newStatus: 'pending' | 'in_progress' | 'completed') => void;
 }
 
 const priorityStyles: Record<string, { chip: string; text: string }> = {
@@ -131,17 +132,26 @@ const TaskCard: React.FC<TaskCardProps> = ({
               className="flex-1 flex-row items-center justify-center rounded-2xl bg-pink-600 px-4 py-3 active:scale-95"
             >
               <CheckCircle2 size={16} color="#FFFFFF" />
-              <Text className="ml-2 text-sm font-semibold text-white">Update Status</Text>
+              <Text className="ml-2 text-sm font-semibold text-white">Accept Task</Text>
             </Pressable>
           ) : null}
 
           {isAccepted && !isCompleted ? (
             <Pressable
-              onPress={onComplete ?? onStart}
+              onPress={() => {
+                Alert.alert(
+                  'Complete Task',
+                  'Are you sure you want to mark this task as completed?',
+                  [
+                    { text: 'Cancel', style: 'cancel' },
+                    { text: 'Complete', onPress: onComplete, style: 'destructive' },
+                  ]
+                );
+              }}
               className="flex-1 flex-row items-center justify-center rounded-2xl bg-emerald-600 px-4 py-3 active:scale-95"
             >
-              <Play size={16} color="#FFFFFF" />
-              <Text className="ml-2 text-sm font-semibold text-white">Update Status</Text>
+              <CheckCircle2 size={16} color="#FFFFFF" />
+              <Text className="ml-2 text-sm font-semibold text-white">Mark Completed</Text>
             </Pressable>
           ) : null}
 

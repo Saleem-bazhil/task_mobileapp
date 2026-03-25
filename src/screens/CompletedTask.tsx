@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, FlatList, Text, View } from 'react-native';
 import TaskCard, { Task } from '../components/TaskScreenComponents/TaskCard';
 import api from '../api/Api';
+import Header from '../components/Header';
 
 const CompletedTasks = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -26,6 +27,7 @@ const CompletedTasks = () => {
 
   return (
     <View className="flex-1 bg-[#FFF6FA]">
+      <Header title="Completed Tasks" showBack />
       <FlatList
         data={tasks}
         keyExtractor={(item) => item.id.toString()}
